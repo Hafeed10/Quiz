@@ -11,7 +11,7 @@ from .serializers import (
     ParticipantSerializer, QuizPublicSerializer, AttemptSubmitSerializer,
     AdminQuizSerializer, AdminAttemptSerializer, QuestionOptionPublicSerializer
 )
-from .mongo_service import sync_participant_to_mongo, sync_quiz_to_mongo, sync_attempt_to_mongo
+from .mongo_service import sync_participant_to_mongo, sync_quiz_to_mongo, sync_attempt_to_mongo, delete_quiz_from_mongo
 
 def get_next_quiz_info():
     today = timezone.localdate()
@@ -165,18 +165,29 @@ def login_or_register_participant(request):
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    name = serializer.validated_data['name']
+    name = serializer.validated_data['name'].strip()
     raw_phone = serializer.validated_data['phone_number']
     phone = normalize_phone(raw_phone)
 
-    participant, is_new = Participant.objects.get_or_create(
-        phone_number=phone,
-        defaults={'name': name}
-    )
+    # Lookup existing participant by phone or case-insensitive name
+    participant = Participant.objects.filter(phone_number=phone).first()
+    if not participant and name:
+        participant = Participant.objects.filter(name__iexact=name).first()
 
-    if not is_new and name and name != participant.name:
-        participant.name = name
-        participant.save(update_fields=['name', 'updated_at'])
+    is_new = False
+    if not participant:
+        participant = Participant.objects.create(name=name, phone_number=phone)
+        is_new = True
+    else:
+        updated = False
+        if name and participant.name != name:
+            participant.name = name
+            updated = True
+        if phone and participant.phone_number != phone:
+            participant.phone_number = phone
+            updated = True
+        if updated:
+            participant.save()
 
     sync_participant_to_mongo(participant)
 
@@ -288,12 +299,26 @@ class AdminQuizViewSet(viewsets.ModelViewSet):
     queryset = Quiz.objects.all().order_by('-quiz_date', '-created_at')
     serializer_class = AdminQuizSerializer
 
+    def perform_create(self, serializer):
+        quiz = serializer.save()
+        sync_quiz_to_mongo(quiz)
+
+    def perform_update(self, serializer):
+        quiz = serializer.save()
+        sync_quiz_to_mongo(quiz)
+
+    def perform_destroy(self, instance):
+        quiz_id = instance.id
+        instance.delete()
+        delete_quiz_from_mongo(quiz_id)
+
     @action(detail=True, methods=['post'])
     def publish(self, request, pk=None):
         quiz = self.get_object()
         quiz.status = 'LIVE'
         quiz.quiz_date = timezone.localdate()
         quiz.save()
+        sync_quiz_to_mongo(quiz)
         return Response({"status": "Published", "quiz_status": quiz.status})
 
     @action(detail=True, methods=['post'])
@@ -302,6 +327,7 @@ class AdminQuizViewSet(viewsets.ModelViewSet):
         quiz.status = 'LIVE'
         quiz.quiz_date = timezone.localdate()
         quiz.save()
+        sync_quiz_to_mongo(quiz)
         return Response({"status": "Made Live", "quiz_status": quiz.status})
 
     @action(detail=True, methods=['post'])
@@ -309,6 +335,7 @@ class AdminQuizViewSet(viewsets.ModelViewSet):
         quiz = self.get_object()
         quiz.status = 'ENDED'
         quiz.save()
+        sync_quiz_to_mongo(quiz)
         return Response({"status": "Closed", "quiz_status": quiz.status})
 
 
@@ -348,11 +375,22 @@ def admin_dashboard_stats(request):
 @api_view(['GET'])
 def admin_participants_list(request):
     """
-    List participants and their attempts for a specific quiz or all time.
+    List participants and their attempts for a specific quiz or all quizzes.
+    GET /api/admin/participants/?quiz_id=ALL
     GET /api/admin/participants/?quiz_id=1
     """
     quiz_id = request.GET.get('quiz_id')
     today = timezone.localdate()
+
+    if quiz_id and str(quiz_id).upper() == 'ALL':
+        attempts = Attempt.objects.select_related('participant', 'quiz').prefetch_related('answers__selected_option', 'answers__question').order_by('-submitted_at', '-created_at')
+        serializer = AdminAttemptSerializer(attempts, many=True)
+        return Response({
+            "quiz_id": "ALL",
+            "quiz_title": "All Quizzes (Combined Submissions)",
+            "quiz_date": "All Dates",
+            "attempts": serializer.data
+        })
 
     if quiz_id:
         quiz = Quiz.objects.filter(id=quiz_id).first()
@@ -360,15 +398,108 @@ def admin_participants_list(request):
         quiz = Quiz.objects.filter(status='LIVE').first() or Quiz.objects.filter(quiz_date=today).first() or Quiz.objects.order_by('-quiz_date').first()
 
     if not quiz:
-        return Response([])
+        return Response({
+            "quiz_id": None,
+            "quiz_title": "No Active Quiz",
+            "quiz_date": "—",
+            "attempts": []
+        })
 
-    attempts = Attempt.objects.filter(quiz=quiz).select_related('participant').prefetch_related('answers__selected_option', 'answers__question')
+    attempts = Attempt.objects.filter(quiz=quiz).select_related('participant', 'quiz').prefetch_related('answers__selected_option', 'answers__question')
     serializer = AdminAttemptSerializer(attempts, many=True)
     return Response({
         "quiz_id": quiz.id,
         "quiz_title": quiz.title,
-        "quiz_date": quiz.quiz_date,
+        "quiz_date": str(quiz.quiz_date),
         "attempts": serializer.data
+    })
+
+
+@api_view(['GET'])
+def admin_cumulative_participants(request):
+    """
+    Get all participants with accumulated daily quiz scores, rankings, and daily breakdowns.
+    Consolidates same-name and same-number entries into 1 single master item.
+    GET /api/admin/participants/cumulative/
+    """
+    from collections import defaultdict
+
+    participants = Participant.objects.prefetch_related(
+        'attempts__quiz',
+        'attempts__answers__question',
+        'attempts__answers__selected_option'
+    ).all()
+
+    # Group participants by normalized name & phone
+    grouped = defaultdict(list)
+    for p in participants:
+        key = p.name.strip().lower()
+        grouped[key].append(p)
+
+    results = []
+    for key, p_list in grouped.items():
+        # Master is the participant with the most attempts
+        p_list.sort(key=lambda x: (x.attempts.count(), -x.id), reverse=True)
+        primary = p_list[0]
+
+        # Gather all completed attempts across all linked records
+        all_completed = []
+        seen_quiz_ids = set()
+        for p in p_list:
+            comp = p.attempts.filter(status='COMPLETED').select_related('quiz').order_by('-quiz__quiz_date', '-submitted_at')
+            for a in comp:
+                if a.quiz_id not in seen_quiz_ids:
+                    seen_quiz_ids.add(a.quiz_id)
+                    all_completed.append(a)
+
+        # Sort all attempts by date DESC
+        all_completed.sort(key=lambda x: (x.quiz.quiz_date, x.submitted_at or timezone.now()), reverse=True)
+
+        total_quizzes = len(all_completed)
+        total_score = sum(a.score for a in all_completed)
+        max_possible = total_quizzes * 4
+        avg_score = round(total_score / total_quizzes, 1) if total_quizzes > 0 else 0
+        accuracy = round((total_score / max_possible) * 100, 1) if max_possible > 0 else 0
+
+        daily_breakdown = []
+        for a in all_completed:
+            daily_breakdown.append({
+                "attempt_id": a.id,
+                "quiz_id": a.quiz.id,
+                "quiz_title": a.quiz.title,
+                "quiz_date": str(a.quiz.quiz_date),
+                "score": a.score,
+                "max_score": 4,
+                "status": a.status,
+                "submitted_at": a.submitted_at.isoformat() if a.submitted_at else None,
+                "submission_time": timezone.localtime(a.submitted_at).strftime('%b %d, %Y • %I:%M:%S %p') if a.submitted_at else "—",
+            })
+
+        latest_attempt = all_completed[0] if all_completed else None
+
+        results.append({
+            "id": primary.id,
+            "name": primary.name,
+            "phone_number": primary.phone_number,
+            "masked_phone": primary.masked_phone,
+            "total_quizzes_taken": total_quizzes,
+            "total_score": total_score,
+            "max_possible_score": max_possible,
+            "average_score": avg_score,
+            "accuracy_percent": accuracy,
+            "last_active": timezone.localtime(latest_attempt.submitted_at).strftime('%b %d, %Y') if (latest_attempt and latest_attempt.submitted_at) else "—",
+            "daily_breakdown": daily_breakdown,
+            "created_at": primary.created_at.isoformat() if getattr(primary, 'created_at', None) else None
+        })
+
+    # Sort participants by total_score DESC, accuracy DESC, total_quizzes DESC
+    results.sort(key=lambda x: (x['total_score'], x['accuracy_percent'], x['total_quizzes_taken']), reverse=True)
+    for idx, item in enumerate(results):
+        item['rank'] = idx + 1
+
+    return Response({
+        "total_participants": len(results),
+        "participants": results
     })
 
 

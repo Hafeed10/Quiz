@@ -62,6 +62,7 @@ export const api = {
   closeAdminQuiz: (id) => request(`/admin/quizzes/${id}/close_quiz/`, { method: 'POST' }),
 
   getAdminParticipants: (quizId) => request(`/admin/participants/${quizId ? `?quiz_id=${quizId}` : ''}`),
+  getAdminCumulativeParticipants: () => request('/admin/participants/cumulative/'),
   getAdminAttemptDetail: (attemptId) => request(`/admin/attempts/${attemptId}/`),
   getAdminQuizWinner: (quizId) => request(`/admin/quizzes/${quizId}/winner/`),
   getAdminQuizResults: (quizId) => request(`/admin/quizzes/${quizId}/results/`),

@@ -87,16 +87,16 @@ export function App() {
       return;
     }
 
-    const status = quizData.dynamic_status;
-    if (status === 'SCHEDULED') {
-      setParticipantSubView('not_started');
-      window.location.hash = '#participant';
-    } else if (status === 'ENDED' || status === 'ARCHIVED') {
-      setParticipantSubView('ended');
-      window.location.hash = '#participant';
-    } else {
+    const isLive = quizData.dynamic_status === 'LIVE' || quizData.status === 'LIVE';
+    if (isLive) {
       setParticipantSubView('quiz');
       window.location.hash = '#quiz';
+    } else if (quizData.dynamic_status === 'SCHEDULED' || quizData.status === 'SCHEDULED') {
+      setParticipantSubView('not_started');
+      window.location.hash = '#participant';
+    } else {
+      setParticipantSubView('ended');
+      window.location.hash = '#participant';
     }
   };
 

@@ -58,93 +58,113 @@ export const Header = ({ currentView, setCurrentView, openLoginModal, isQuizOpen
           </div>
 
           {/* Navigation Links — Desktop */}
-          <nav className="header-desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {!isQuizOpen && (
+          {currentView === 'admin' ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{
+                background: '#f1f5f9',
+                color: '#334155',
+                fontSize: '11px',
+                fontWeight: 800,
+                padding: '4px 10px',
+                borderRadius: '6px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                border: '1px solid #e2e8f0',
+              }}>
+                Admin Console
+              </span>
+            </div>
+          ) : (
+            <nav className="header-desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {!isQuizOpen && (
+                <button
+                  onClick={() => setCurrentView('launch')}
+                  style={{
+                    background: currentView === 'launch' ? '#ecfdf5' : 'transparent',
+                    color: currentView === 'launch' ? '#065f46' : '#475569',
+                    fontWeight: currentView === 'launch' ? 700 : 500,
+                    fontSize: '13px',
+                    padding: '7px 14px',
+                    borderRadius: 'var(--radius-md)',
+                    border: currentView === 'launch' ? '1px solid #a7f3d0' : '1px solid transparent',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  <QrCode size={14} color={currentView === 'launch' ? '#065f46' : '#64748b'} />
+                  QR Code Portal
+                </button>
+              )}
+
               <button
-                onClick={() => setCurrentView('launch')}
+                onClick={() => {
+                  if (!isQuizOpen) setCurrentView('participant');
+                }}
                 style={{
-                  background: currentView === 'launch' ? '#ecfdf5' : 'transparent',
-                  color: currentView === 'launch' ? '#065f46' : '#475569',
-                  fontWeight: currentView === 'launch' ? 700 : 500,
+                  background: currentView === 'participant' ? '#ecfdf5' : 'transparent',
+                  color: currentView === 'participant' ? '#065f46' : '#475569',
+                  fontWeight: currentView === 'participant' ? 700 : 500,
                   fontSize: '13px',
                   padding: '7px 14px',
                   borderRadius: 'var(--radius-md)',
-                  border: currentView === 'launch' ? '1px solid #a7f3d0' : '1px solid transparent',
-                  cursor: 'pointer',
+                  border: currentView === 'participant' ? '1px solid #a7f3d0' : '1px solid transparent',
+                  cursor: isQuizOpen ? 'default' : 'pointer',
                   transition: 'all 0.15s ease',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
                 }}
               >
-                <QrCode size={14} color={currentView === 'launch' ? '#065f46' : '#64748b'} />
-                QR Code Portal
+                Participant Quiz {isQuizOpen ? '(Active)' : ''}
               </button>
-            )}
-
-            <button
-              onClick={() => {
-                if (!isQuizOpen) setCurrentView('participant');
-              }}
-              style={{
-                background: currentView === 'participant' ? '#ecfdf5' : 'transparent',
-                color: currentView === 'participant' ? '#065f46' : '#475569',
-                fontWeight: currentView === 'participant' ? 700 : 500,
-                fontSize: '13px',
-                padding: '7px 14px',
-                borderRadius: 'var(--radius-md)',
-                border: currentView === 'participant' ? '1px solid #a7f3d0' : '1px solid transparent',
-                cursor: isQuizOpen ? 'default' : 'pointer',
-                transition: 'all 0.15s ease',
-              }}
-            >
-              Participant Quiz {isQuizOpen ? '(Active)' : ''}
-            </button>
-          </nav>
+            </nav>
+          )}
         </div>
 
         {/* Mobile Header Right Item */}
-        <div className="header-mobile-avatar-wrap">
-          {isQuizOpen ? (
-            <span style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '5px',
-              background: '#c8f5df',
-              color: '#065f46',
-              fontSize: '12px',
-              fontWeight: 800,
-              padding: '4px 10px',
-              borderRadius: '999px',
-              fontFamily: 'var(--font-mono)',
-            }}>
-              <Clock size={13} color="#065f46" />
-              <span>04:59</span>
-            </span>
-          ) : (
-            <button
-              onClick={openLoginModal}
-              aria-label="User Account"
-              style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '50%',
-                background: '#065f46',
-                color: '#ffffff',
-                display: 'flex',
+        {currentView !== 'admin' && (
+          <div className="header-mobile-avatar-wrap">
+            {isQuizOpen ? (
+              <span style={{
+                display: 'inline-flex',
                 alignItems: 'center',
-                justifyContent: 'center',
+                gap: '5px',
+                background: '#c8f5df',
+                color: '#065f46',
+                fontSize: '12px',
                 fontWeight: 800,
-                fontSize: '13px',
-                border: 'none',
-                cursor: 'pointer',
-                boxShadow: '0 2px 6px rgba(6, 95, 70, 0.25)',
-              }}
-            >
-              {userInitial}
-            </button>
-          )}
-        </div>
+                padding: '4px 10px',
+                borderRadius: '999px',
+                fontFamily: 'var(--font-mono)',
+              }}>
+                <Clock size={13} color="#065f46" />
+                <span>04:59</span>
+              </span>
+            ) : (
+              <button
+                onClick={openLoginModal}
+                aria-label="User Account"
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  background: '#065f46',
+                  color: '#ffffff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 800,
+                  fontSize: '13px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 6px rgba(6, 95, 70, 0.25)',
+                }}
+              >
+                {userInitial}
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Right: Participant Info & Desktop Actions */}
         <div className="header-admin-controls" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -168,8 +188,8 @@ export const Header = ({ currentView, setCurrentView, openLoginModal, isQuizOpen
             </span>
           )}
 
-          {/* Participant Identification Chip */}
-          {participant ? (
+          {/* Participant Identification Chip — only visible on public/participant views, hidden in Admin Console */}
+          {currentView !== 'admin' && participant ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div style={{
                 display: 'flex',
@@ -224,7 +244,7 @@ export const Header = ({ currentView, setCurrentView, openLoginModal, isQuizOpen
               )}
             </div>
           ) : (
-            !isQuizOpen && (
+            !isQuizOpen && currentView !== 'admin' && (
               <button
                 onClick={openLoginModal}
                 className="btn-secondary"
@@ -236,33 +256,46 @@ export const Header = ({ currentView, setCurrentView, openLoginModal, isQuizOpen
             )
           )}
 
-          {/* Admin Logout — only shown when logged-in admin is on the admin page */}
-          {!isQuizOpen && currentView === 'admin' && isAdmin && (
+          {/* Admin Controls — shown when viewing admin page */}
+          {!isQuizOpen && currentView === 'admin' && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '5px',
-                background: '#ecfdf5',
-                border: '1px solid #a7f3d0',
-                color: '#065f46',
-                fontSize: '11px',
-                fontWeight: 800,
-                padding: '4px 10px',
-                borderRadius: '999px',
-              }}>
-                <ShieldCheck size={13} color="#059669" />
-                Admin Verified
-              </span>
               <button
-                onClick={logoutAdmin}
+                onClick={() => setCurrentView('participant')}
                 className="btn-secondary"
-                style={{ padding: '6px 10px', fontSize: '11px', fontWeight: 700 }}
-                title="Logout Admin"
+                style={{ padding: '6px 12px', fontSize: '12px', fontWeight: 600 }}
+                title="Switch to Participant Portal"
               >
-                <Lock size={12} />
-                Logout
+                View Portal
               </button>
+
+              {isAdmin && (
+                <>
+                  <span style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    background: '#ecfdf5',
+                    border: '1px solid #a7f3d0',
+                    color: '#065f46',
+                    fontSize: '11px',
+                    fontWeight: 800,
+                    padding: '4px 10px',
+                    borderRadius: '999px',
+                  }}>
+                    <ShieldCheck size={13} color="#059669" />
+                    Admin Verified
+                  </span>
+                  <button
+                    onClick={logoutAdmin}
+                    className="btn-secondary"
+                    style={{ padding: '6px 10px', fontSize: '11px', fontWeight: 700 }}
+                    title="Logout Admin"
+                  >
+                    <Lock size={12} />
+                    Logout
+                  </button>
+                </>
+              )}
             </div>
           )}
         </div>

@@ -372,7 +372,7 @@ export const QuizBuilder = ({ quizToEdit, onSaved, onCancel }) => {
         </button>
 
         <button
-          onClick={() => handleSave('SCHEDULED')}
+          onClick={() => handleSave('LIVE')}
           disabled={saving}
           className="btn-primary"
         >

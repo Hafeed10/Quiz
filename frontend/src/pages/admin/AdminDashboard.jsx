@@ -2,20 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../api/client';
 import { QuizBuilder } from './QuizBuilder';
 import { ParticipantsView } from './ParticipantsView';
+import { CumulativeScoresPortal } from './CumulativeScoresPortal';
 import { WinnerView } from './WinnerView';
 import { QuizHistoryView } from './QuizHistoryView';
 import { CustomDropdown } from '../../components/CustomDropdown';
 import {
   Users, Award, PlusCircle, RefreshCw,
   Calendar, Clock, CheckCircle2, History, Trophy, BookOpen,
-  Sparkles, Shield, ArrowUpRight, Check
+  Sparkles, Shield, ArrowUpRight, Check, BarChart3
 } from 'lucide-react';
 
 export const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
   const [quizzes, setQuizzes] = useState([]);
   const [selectedQuizId, setSelectedQuizId] = useState(null);
-  const [activeTab, setActiveTab] = useState('participants'); // 'participants' | 'winner' | 'builder' | 'history'
+  const [activeTab, setActiveTab] = useState('leaderboard'); // 'leaderboard' | 'participants' | 'winner' | 'builder' | 'history'
   const [editingQuiz, setEditingQuiz] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -68,16 +69,33 @@ export const AdminDashboard = () => {
     }
   };
 
+  const handleDeleteQuiz = async (quizId) => {
+    try {
+      await api.deleteAdminQuiz(quizId);
+      loadData();
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
   const todayStats = stats?.today_stats || {};
 
-  const quizDropdownOptions = quizzes.map((q) => ({
-    value: q.id,
-    label: `${q.quiz_date} — ${q.title}`,
-    badge: q.dynamic_status,
-    badgeClass: q.dynamic_status === 'LIVE' ? 'badge-live' : q.dynamic_status === 'SCHEDULED' ? 'badge-scheduled' : 'badge-ended',
-  }));
+  const quizDropdownOptions = [
+    {
+      value: 'ALL',
+      label: '⚡ All Quizzes (All Submissions)',
+      badge: `${quizzes.length} Quizzes`,
+      badgeClass: 'badge-live',
+    },
+    ...quizzes.map((q) => ({
+      value: q.id,
+      label: `${q.quiz_date} — ${q.title}`,
+      badge: q.dynamic_status,
+      badgeClass: q.dynamic_status === 'LIVE' ? 'badge-live' : q.dynamic_status === 'SCHEDULED' ? 'badge-scheduled' : 'badge-ended',
+    }))
+  ];
 
-  const selectedQuiz = quizzes.find((q) => q.id === selectedQuizId);
+  const selectedQuiz = selectedQuizId === 'ALL' ? null : quizzes.find((q) => q.id === selectedQuizId);
 
   return (
     <div className="admin-container animate-fade-in" style={{ maxWidth: '1240px', padding: '36px 24px 100px' }}>
@@ -114,7 +132,7 @@ export const AdminDashboard = () => {
             </span>
           </div>
           <p style={{ fontSize: '13px', color: '#64748b' }}>
-            Configure daily reading paragraphs, review participants, inspect submitted answers & verify winners.
+            Configure daily reading paragraphs, review participants, inspect submitted answers & track cumulative daily scores.
           </p>
         </div>
 
@@ -158,35 +176,33 @@ export const AdminDashboard = () => {
           <div style={{ fontSize: '32px', fontWeight: 900, color: '#0f172a', lineHeight: 1 }}>
             {stats?.total_participants || 0}
           </div>
-          <div style={{ fontSize: '12px', color: '#059669', fontWeight: 600, marginTop: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span>Verified Phone Profiles</span>
+          <div style={{ fontSize: '12px', color: '#64748b', marginTop: '8px' }}>
+            Unique Verified Profiles
           </div>
         </div>
 
-        {/* Metric 2: Today's Status */}
+        {/* Metric 2: Total Quizzes */}
         <div className="glass-card" style={{ padding: '20px', background: '#ffffff' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
             <span style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Today's Quiz State
+              Total Quizzes
             </span>
-            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Calendar size={16} color="#2563eb" />
+            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <BookOpen size={16} color="#065f46" />
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span className={`badge ${todayStats.status === 'LIVE' ? 'badge-live' : todayStats.status === 'SCHEDULED' ? 'badge-scheduled' : 'badge-ended'}`} style={{ fontSize: '12px', padding: '4px 12px' }}>
-              {todayStats.status || 'NO ACTIVE QUIZ'}
-            </span>
+          <div style={{ fontSize: '32px', fontWeight: 900, color: '#0f172a', lineHeight: 1 }}>
+            {stats?.total_quizzes || 0}
           </div>
-          <div style={{ fontSize: '12px', color: '#64748b', marginTop: '8px', fontFamily: 'var(--font-mono)' }}>
-            Window: {todayStats.start_time || '10:00'} – {todayStats.end_time || '16:00'}
+          <div style={{ fontSize: '12px', color: '#64748b', marginTop: '8px' }}>
+            Scheduled & Past Quizzes
           </div>
         </div>
 
-        {/* Metric 3: Submissions Finalized */}
+        {/* Metric 3: Completed Today */}
         <div className="glass-card" style={{ padding: '20px', background: '#ffffff' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-            <span style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <span style={{ fontSize: '11px', fontWeight: 800, color: '#065f46', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Completed Today
             </span>
             <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -241,8 +257,8 @@ export const AdminDashboard = () => {
             options={quizDropdownOptions}
             value={selectedQuizId}
             onChange={(val) => setSelectedQuizId(Number(val))}
-            width="480px"
-            popoverWidth="580px"
+            width="460px"
+            popoverWidth="540px"
           />
         </div>
 
@@ -257,8 +273,9 @@ export const AdminDashboard = () => {
           border: '1px solid #e2e8f0',
         }}>
           {[
-            { id: 'participants', label: 'Participants', icon: Users },
-            { id: 'winner', label: 'Winner', icon: Trophy },
+            { id: 'leaderboard', label: '🏆 Cumulative Scores Portal', icon: Trophy },
+            { id: 'participants', label: 'Live Submissions', icon: Users },
+            { id: 'winner', label: 'Winner Declaration', icon: Award },
             { id: 'builder', label: 'Quiz Builder', icon: PlusCircle },
             { id: 'history', label: 'Quiz History', icon: History },
           ].map((tab) => {
@@ -297,6 +314,10 @@ export const AdminDashboard = () => {
 
       {/* Main Core Views Container */}
       <div>
+        {activeTab === 'leaderboard' && (
+          <CumulativeScoresPortal />
+        )}
+
         {activeTab === 'participants' && selectedQuizId && (
           <ParticipantsView quizId={selectedQuizId} />
         )}
@@ -331,6 +352,7 @@ export const AdminDashboard = () => {
               setEditingQuiz(quiz);
               setActiveTab('builder');
             }}
+            onDeleteQuiz={handleDeleteQuiz}
             onMakeLive={handleMakeLive}
             onCloseQuiz={handleCloseQuiz}
           />

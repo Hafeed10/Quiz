@@ -8,9 +8,9 @@ import {
 export const LandingPage = ({ quizData, onStartQuiz, openLoginModal }) => {
   const { participant } = useAuth();
 
-  const isLive = quizData?.dynamic_status === 'LIVE';
-  const isScheduled = quizData?.dynamic_status === 'SCHEDULED';
-  const isEnded = quizData?.dynamic_status === 'ENDED' || quizData?.dynamic_status === 'ARCHIVED';
+  const isLive = quizData?.dynamic_status === 'LIVE' || quizData?.status === 'LIVE';
+  const isEnded = (quizData?.dynamic_status === 'ENDED' || quizData?.dynamic_status === 'ARCHIVED' || quizData?.status === 'ENDED') && !isLive;
+  const isScheduled = (quizData?.dynamic_status === 'SCHEDULED' || quizData?.status === 'SCHEDULED') && !isLive && !isEnded;
   const hasCompleted = quizData?.has_completed;
 
   const handleActionClick = () => {

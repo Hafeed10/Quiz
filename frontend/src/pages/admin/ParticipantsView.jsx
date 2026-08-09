@@ -136,6 +136,9 @@ export const ParticipantsView = ({ quizId }) => {
                   </button>
                 </div>
               </th>
+              {data.quiz_id === 'ALL' && (
+                <th style={{ padding: '14px 18px', fontWeight: 700, fontSize: '12px', textTransform: 'uppercase' }}>Quiz Title</th>
+              )}
               <th style={{ padding: '14px 18px', fontWeight: 700, fontSize: '12px', textTransform: 'uppercase' }}>Status</th>
               <th style={{ padding: '14px 18px', fontWeight: 700, fontSize: '12px', textTransform: 'uppercase' }}>Submitted At</th>
               <th style={{ padding: '14px 18px', fontWeight: 700, fontSize: '12px', textTransform: 'uppercase' }}>Score</th>
@@ -145,7 +148,7 @@ export const ParticipantsView = ({ quizId }) => {
           <tbody>
             {filteredAttempts.length === 0 ? (
               <tr>
-                <td colSpan={6} style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>
+                <td colSpan={data.quiz_id === 'ALL' ? 7 : 6} style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>
                   {loading ? 'Loading participants...' : 'No participant submissions recorded for this quiz.'}
                 </td>
               </tr>
@@ -218,9 +221,9 @@ export const ParticipantsView = ({ quizId }) => {
                             alignItems: 'center',
                             cursor: 'pointer',
                           }}
-                          title={isRowRevealed ? 'Mask this phone number' : 'Show full phone number'}
+                          title={isRowRevealed ? 'Mask phone number' : 'Reveal full number'}
                         >
-                          {isRowRevealed ? <EyeOff size={14} /> : <Eye size={14} />}
+                          {isRowRevealed ? <EyeOff size={13} /> : <Eye size={13} />}
                         </button>
 
                         <button
@@ -235,12 +238,20 @@ export const ParticipantsView = ({ quizId }) => {
                             alignItems: 'center',
                             cursor: 'pointer',
                           }}
-                          title="Copy Full Phone Number"
+                          title="Copy phone number"
                         >
-                          {copiedId === att.id ? <Check size={14} color="#059669" /> : <Copy size={14} />}
+                          {copiedId === att.id ? <Check size={13} color="#059669" /> : <Copy size={13} />}
                         </button>
                       </div>
                     </td>
+
+                    {/* Quiz Title Column (when All Quizzes is active) */}
+                    {data.quiz_id === 'ALL' && (
+                      <td style={{ padding: '14px 18px', color: '#0f172a', fontWeight: 600, fontSize: '13px' }}>
+                        <div>{att.quiz_title || 'Daily Quiz'}</div>
+                        <div style={{ fontSize: '11px', color: '#64748b', fontFamily: 'var(--font-mono)' }}>{att.quiz_date}</div>
+                      </td>
+                    )}
 
                     {/* Status */}
                     <td style={{ padding: '14px 18px' }}>

@@ -1,5 +1,6 @@
 import re
 from datetime import datetime, date, time
+from django.db.models import Avg, Max, Count
 from rest_framework import serializers
 from django.utils import timezone
 from .models import Participant, Quiz, Question, QuestionOption, Attempt, Answer, normalize_phone
@@ -351,15 +352,17 @@ class AdminAttemptSerializer(serializers.ModelSerializer):
     participant_name = serializers.CharField(source='participant.name')
     phone_number = serializers.CharField(source='participant.phone_number')
     masked_phone = serializers.CharField(source='participant.masked_phone')
+    quiz_title = serializers.CharField(source='quiz.title', read_only=True)
+    quiz_date = serializers.CharField(source='quiz.quiz_date', read_only=True)
     answers = AdminAnswerReviewSerializer(many=True, read_only=True)
     submission_time_formatted = serializers.SerializerMethodField()
 
     class Meta:
         model = Attempt
         fields = [
-            'id', 'participant_name', 'phone_number', 'masked_phone',
-            'status', 'score', 'started_at', 'submitted_at',
-            'submission_time_formatted', 'answers'
+            'id', 'quiz_id', 'quiz_title', 'quiz_date', 'participant_name',
+            'phone_number', 'masked_phone', 'status', 'score', 'started_at',
+            'submitted_at', 'submission_time_formatted', 'answers'
         ]
 
     def get_submission_time_formatted(self, obj):
