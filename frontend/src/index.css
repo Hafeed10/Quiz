@@ -1,0 +1,582 @@
+/* ==========================================================================
+   CLEAN WHITE & DARK GREEN DESIGN SYSTEM
+   Fully responsive mobile-first layout — crisp white background,
+   rich dark green primary buttons & accents, high-contrast typography.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+  /* Font Families */
+  --font-sans: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Surfaces & Backgrounds */
+  --bg-app: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f1f5f9;
+  --bg-input: #ffffff;
+
+  /* Borders */
+  --border-subtle: #e2e8f0;
+  --border-card: #e2e8f0;
+  --border-focus: #059669;
+  --border-hover: #047857;
+
+  /* High-Contrast Typography */
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-inverse: #ffffff;
+
+  /* Dark Green Primary Tokens */
+  --primary: #065f46;
+  --primary-hover: #064e3b;
+  --primary-dark: #022c22;
+  --primary-gradient: linear-gradient(135deg, #065f46 0%, #047857 100%);
+  --primary-hover-gradient: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+  --primary-glow: 0 4px 14px rgba(6, 95, 70, 0.25);
+
+  /* Semantic State Colors */
+  --emerald: #059669;
+  --emerald-bg: #ecfdf5;
+  --emerald-border: #a7f3d0;
+  --emerald-text: #065f46;
+
+  --amber: #d97706;
+  --amber-bg: #fffbeb;
+  --amber-border: #fde68a;
+  --amber-text: #92400e;
+
+  --rose: #e11d48;
+  --rose-bg: #fff1f2;
+  --rose-border: #fecdd3;
+  --rose-text: #9f1239;
+
+  --blue: #2563eb;
+  --blue-bg: #eff6ff;
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-elevated: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* Transitions */
+  --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Prevent scroll jump from hash changes */
+html {
+  scroll-behavior: smooth;
+  overflow-y: scroll;
+}
+
+/* ========== BASE STYLES ========== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #f8fafc;
+  background-image:
+    radial-gradient(at 0% 0%, rgba(5, 150, 105, 0.05) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(6, 95, 70, 0.04) 0px, transparent 50%);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Mobile-app padding for bottom navigation safe area */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+/* ========== CARD SYSTEM ========== */
+.glass-card {
+  background: #ffffff;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  position: relative;
+}
+
+.glass-card-interactive {
+  background: #ffffff;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  transition: var(--transition-smooth);
+}
+
+.glass-card-interactive:hover {
+  border-color: var(--emerald);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-elevated);
+}
+
+/* ========== BUTTONS ========== */
+.btn-primary {
+  background: var(--primary-gradient);
+  color: #ffffff;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 14px;
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: var(--primary-glow);
+  transition: var(--transition-fast);
+  text-decoration: none;
+  /* Prevent tap highlight on mobile */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-hover-gradient);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(6, 95, 70, 0.35);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-secondary {
+  background: #ffffff;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 13px;
+  padding: 10px 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-card);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: var(--transition-fast);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #065f46;
+  transform: translateY(-1px);
+}
+
+.btn-secondary:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+  color: #ffffff;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 14px;
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(6, 95, 70, 0.25);
+  transition: var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.btn-success:hover:not(:disabled) {
+  background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(6, 95, 70, 0.35);
+}
+
+.btn-danger {
+  background: #fff1f2;
+  color: #be123c;
+  border: 1px solid #fecdd3;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  transition: var(--transition-fast);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btn-danger:hover {
+  background: #ffe4e6;
+  border-color: #fda4af;
+}
+
+/* ========== BADGES ========== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.badge-live {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.badge-scheduled {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.badge-completed {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.badge-ended {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+}
+
+/* ========== OPTION CARDS (Quiz A/B/C/D) ========== */
+.option-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border-radius: var(--radius-md);
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  user-select: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.option-card:hover {
+  background: #f8fafc;
+  border-color: #059669;
+  transform: translateX(4px);
+}
+
+/* Disable translateX on touch/mobile to avoid jarring effect */
+@media (hover: none) {
+  .option-card:hover {
+    transform: none;
+  }
+  .option-card:active {
+    background: #ecfdf5;
+    border-color: #059669;
+  }
+}
+
+.option-card.selected {
+  background: #ecfdf5;
+  border-color: #059669;
+  box-shadow: 0 0 0 1px #059669, 0 4px 12px rgba(5, 150, 105, 0.1);
+}
+
+.option-badge {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 13px;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  transition: var(--transition-fast);
+}
+
+.option-card.selected .option-badge {
+  background: #065f46;
+  color: #ffffff;
+  border-color: #065f46;
+}
+
+/* ========== FORM INPUTS ========== */
+input, textarea, select {
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  font-size: 14px;
+  transition: var(--transition-fast);
+  outline: none;
+  /* Make inputs feel native on mobile */
+  -webkit-appearance: none;
+  appearance: none;
+  font-size: 16px; /* Prevent iOS zoom on focus */
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: #059669;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+  background: #ffffff;
+}
+
+/* ========== STICKY TIMER BAR ========== */
+.sticky-timer-bar {
+  position: sticky;
+  top: 72px; /* below header */
+  z-index: 40;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: var(--radius-lg);
+  padding: 14px 24px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.06);
+}
+
+.timer-countdown {
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: 800;
+  color: #065f46;
+  letter-spacing: 0.05em;
+}
+
+.timer-urgent {
+  color: #dc2626;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.02); }
+}
+
+/* ========== LAYOUT CONTAINERS ========== */
+.app-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px 20px 100px;
+}
+
+.admin-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px 100px;
+}
+
+/* ========== MICRO-ANIMATIONS ========== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* ========== MOBILE BOTTOM NAV ========== */
+.mobile-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.06);
+  padding: 8px 0 calc(8px + env(safe-area-inset-bottom, 0px));
+  display: none; /* Hidden on desktop, shown on mobile via media query */
+}
+
+.mobile-bottom-nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.mobile-nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 700;
+  color: #64748b;
+  transition: color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  min-width: 56px;
+}
+
+.mobile-nav-btn.active {
+  color: #065f46;
+}
+
+.mobile-nav-btn.active .mobile-nav-icon {
+  background: #ecfdf5;
+}
+
+.mobile-nav-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  transition: background 0.15s ease;
+}
+
+/* ========== RESPONSIVE BREAKPOINTS ========== */
+
+/* ---- Tablet (768px - 1024px) ---- */
+@media (max-width: 1024px) {
+  .app-container {
+    padding: 24px 16px 100px;
+  }
+  .admin-container {
+    padding: 24px 16px 100px;
+  }
+}
+
+/* ---- Mobile (max 768px) ---- */
+@media (max-width: 768px) {
+  /* Show mobile bottom nav on mobile */
+  .mobile-bottom-nav {
+    display: block;
+  }
+
+  /* Typography scale down */
+  h1 { font-size: clamp(24px, 7vw, 40px) !important; }
+  h2 { font-size: clamp(18px, 5vw, 28px) !important; }
+  h3 { font-size: clamp(15px, 4vw, 20px) !important; }
+
+  /* Containers */
+  .app-container {
+    padding: 16px 14px 100px;
+  }
+  .admin-container {
+    padding: 16px 14px 100px;
+  }
+
+  /* Option cards: bigger tap targets on mobile */
+  .option-card {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+
+  /* Full-width buttons on mobile */
+  .btn-primary,
+  .btn-secondary,
+  .btn-success {
+    width: 100%;
+    font-size: 15px;
+    padding: 14px 20px;
+  }
+
+  /* Sticky timer: full width flush */
+  .sticky-timer-bar {
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    top: 60px;
+  }
+
+  /* Glass card mobile reduction */
+  .glass-card {
+    border-radius: var(--radius-md);
+  }
+
+  /* Header navigation tabs: hide on mobile (replaced by bottom nav) */
+  .header-desktop-nav {
+    display: none !important;
+  }
+
+  /* Hide admin controls in header on mobile (bottom nav handles them) */
+  .header-admin-controls {
+    display: none !important;
+  }
+
+  /* Grid columns collapse to 1 on mobile */
+  [style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ---- Small Mobile (max 480px) ---- */
+@media (max-width: 480px) {
+  .app-container {
+    padding: 12px 12px 90px;
+  }
+  .admin-container {
+    padding: 12px 12px 90px;
+  }
+
+  .option-badge {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    font-size: 12px;
+  }
+
+  .badge {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+}
