@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { QRCodeSVG } from 'qrcode.react';
 import {
   QrCode, Smartphone, ArrowRight, ShieldCheck, Copy, Check,
-  BookOpen, Clock, Award, Sparkles, Zap, ChevronLeft, Rocket, Shield, CheckCircle2, UserCheck
+  BookOpen, Clock, Award, Sparkles, Zap, ChevronLeft, Rocket, Shield, CheckCircle2, UserCheck, ExternalLink
 } from 'lucide-react';
 
 export const LaunchQRPortal = ({ onProceedToLanding, onProceedToAdmin }) => {
@@ -10,10 +11,10 @@ export const LaunchQRPortal = ({ onProceedToLanding, onProceedToAdmin }) => {
   // step 1 = 'launch_items', step 2 = 'qr_code'
   const [step, setStep] = useState(1);
   const [copied, setCopied] = useState(false);
-  const currentUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173';
+  const targetUrl = 'https://al-anvar.netlify.app/';
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(currentUrl);
+    navigator.clipboard.writeText(targetUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -364,7 +365,7 @@ export const LaunchQRPortal = ({ onProceedToLanding, onProceedToAdmin }) => {
             textAlign: 'center',
             boxShadow: '0 25px 50px -12px rgba(6, 95, 70, 0.15)',
           }}>
-            {/* Scannable SVG QR Code Matrix */}
+            {/* Genuine Scannable QR Code Matrix */}
             <div style={{
               display: 'inline-block',
               padding: '16px',
@@ -372,49 +373,34 @@ export const LaunchQRPortal = ({ onProceedToLanding, onProceedToAdmin }) => {
               border: '2px solid #cbd5e1',
               borderRadius: '16px',
               boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.08)',
-              marginBottom: '24px',
+              marginBottom: '16px',
             }}>
-              <svg width="220" height="220" viewBox="0 0 210 210" style={{ display: 'block' }}>
-                <rect width="210" height="210" fill="#ffffff" rx="8" />
+              <QRCodeSVG
+                value={targetUrl}
+                size={220}
+                bgColor="#ffffff"
+                fgColor="#065f46"
+                level="H"
+                includeMargin={true}
+              />
+            </div>
 
-                {/* Finder Squares */}
-                <rect x="15" y="15" width="50" height="50" fill="#065f46" rx="6" />
-                <rect x="23" y="23" width="34" height="34" fill="#ffffff" rx="4" />
-                <rect x="31" y="31" width="18" height="18" fill="#065f46" rx="2" />
-
-                <rect x="145" y="15" width="50" height="50" fill="#065f46" rx="6" />
-                <rect x="153" y="23" width="34" height="34" fill="#ffffff" rx="4" />
-                <rect x="161" y="31" width="18" height="18" fill="#065f46" rx="2" />
-
-                <rect x="15" y="145" width="50" height="50" fill="#065f46" rx="6" />
-                <rect x="23" y="153" width="34" height="34" fill="#ffffff" rx="4" />
-                <rect x="31" y="161" width="18" height="18" fill="#065f46" rx="2" />
-
-                {/* QR Pattern */}
-                <rect x="75" y="18" width="8" height="8" fill="#0f172a" rx="1" />
-                <rect x="90" y="18" width="8" height="8" fill="#065f46" rx="1" />
-                <rect x="105" y="18" width="8" height="8" fill="#0f172a" rx="1" />
-                <rect x="120" y="18" width="8" height="8" fill="#065f46" rx="1" />
-                <rect x="75" y="33" width="8" height="8" fill="#065f46" rx="1" />
-                <rect x="105" y="33" width="8" height="8" fill="#0f172a" rx="1" />
-                <rect x="120" y="33" width="8" height="8" fill="#065f46" rx="1" />
-
-                <rect x="18" y="75" width="8" height="8" fill="#0f172a" rx="1" />
-                <rect x="33" y="75" width="8" height="8" fill="#065f46" rx="1" />
-                <rect x="48" y="75" width="8" height="8" fill="#0f172a" rx="1" />
-                <rect x="63" y="75" width="8" height="8" fill="#065f46" rx="1" />
-                <rect x="78" y="75" width="8" height="8" fill="#0f172a" rx="1" />
-                <rect x="93" y="75" width="8" height="8" fill="#065f46" rx="1" />
-                <rect x="108" y="75" width="8" height="8" fill="#0f172a" rx="1" />
-                <rect x="123" y="75" width="8" height="8" fill="#065f46" rx="1" />
-                <rect x="138" y="75" width="8" height="8" fill="#0f172a" rx="1" />
-                <rect x="153" y="75" width="8" height="8" fill="#065f46" rx="1" />
-                <rect x="168" y="75" width="8" height="8" fill="#0f172a" rx="1" />
-                <rect x="183" y="75" width="8" height="8" fill="#065f46" rx="1" />
-
-                <circle cx="105" cy="105" r="16" fill="#ffffff" />
-                <circle cx="105" cy="105" r="12" fill="#065f46" />
-              </svg>
+            {/* Target URL Display */}
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              padding: '6px 14px',
+              borderRadius: '8px',
+              fontSize: '12px',
+              fontFamily: 'var(--font-mono)',
+              fontWeight: 700,
+              color: '#065f46',
+              marginBottom: '20px',
+            }}>
+              <span>{targetUrl}</span>
             </div>
 
             {/* Active Session Indicator */}

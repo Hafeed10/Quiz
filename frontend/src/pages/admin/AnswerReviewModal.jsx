@@ -23,82 +23,28 @@ export const AnswerReviewModal = ({ attempt, onClose }) => {
   };
 
   const modalContent = (
-    /* Full Black Opacity Backdrop Overlay mounted directly on document.body via Portal */
-    <div
-      onClick={onClose}
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        width: '100vw',
-        height: '100vh',
-        backgroundColor: 'rgba(0, 0, 0, 0.75)', // Deep full black opacity
-        backdropFilter: 'blur(6px)',
-        WebkitBackdropFilter: 'blur(6px)',
-        zIndex: 9999999, // Absolute highest z-index across entire document
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '20px',
-        boxSizing: 'border-box',
-      }}
-    >
-      {/* Centered Modal Card */}
+    <div className="modal-overlay" onClick={onClose}>
       <div
+        className="modal-container modal-container-lg"
         onClick={(e) => e.stopPropagation()}
-        className="glass-card animate-fade-in"
-        style={{
-          maxWidth: '720px',
-          width: '100%',
-          maxHeight: '88vh',
-          overflowY: 'auto',
-          padding: '32px',
-          position: 'relative',
-          background: '#ffffff',
-          border: '1.5px solid #cbd5e1',
-          borderRadius: '16px',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(0,0,0,0.15)',
-        }}
       >
         {/* Close Button */}
         <button
           type="button"
           onClick={onClose}
-          style={{
-            position: 'absolute',
-            top: '20px',
-            right: '20px',
-            background: '#f1f5f9',
-            border: '1px solid #cbd5e1',
-            color: '#475569',
-            width: '34px',
-            height: '34px',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            transition: 'all 0.15s ease',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#e2e8f0';
-            e.currentTarget.style.color = '#0f172a';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = '#f1f5f9';
-            e.currentTarget.style.color = '#475569';
-          }}
+          className="modal-close-btn"
+          title="Close review"
+          aria-label="Close review"
         >
           <X size={18} />
         </button>
 
         {/* Modal Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px', paddingRight: '40px' }}>
           <div style={{
-            width: '52px',
-            height: '52px',
+            width: '48px',
+            height: '48px',
+            minWidth: '48px',
             borderRadius: '12px',
             background: '#ecfdf5',
             border: '1px solid #a7f3d0',
@@ -107,15 +53,15 @@ export const AnswerReviewModal = ({ attempt, onClose }) => {
             justifyContent: 'center',
             flexShrink: 0,
           }}>
-            <User size={24} color="#065f46" />
+            <User size={22} color="#065f46" />
           </div>
           <div>
-            <h2 style={{ fontSize: '24px', fontWeight: 900, color: '#0f172a', lineHeight: 1.2 }}>
+            <h2 style={{ fontSize: '22px', fontWeight: 900, color: '#0f172a', lineHeight: 1.2, margin: 0 }}>
               {attempt.participant_name}
             </h2>
-            <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '12px', fontSize: '13px', color: '#64748b', marginTop: '6px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '10px', fontSize: '13px', color: '#64748b', marginTop: '6px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Phone size={14} color="#64748b" />
+                <Phone size={13} color="#64748b" />
                 <span style={{ color: '#64748b' }}>Phone:</span>
                 <strong style={{ fontFamily: 'var(--font-mono)', color: '#0f172a' }}>
                   {showPhone ? attempt.phone_number : attempt.masked_phone}
@@ -171,36 +117,36 @@ export const AnswerReviewModal = ({ attempt, onClose }) => {
         </div>
 
         {/* Question Breakdown List in Sharp High Contrast */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           {attempt.answers?.map((ans, idx) => {
             const isCorrect = ans.is_correct;
             return (
               <div
                 key={idx}
                 style={{
-                  padding: '20px',
+                  padding: '16px 18px',
                   borderRadius: '10px',
                   background: isCorrect ? '#f0fdf4' : '#fff1f2',
                   border: isCorrect ? '1.5px solid #86efac' : '1.5px solid #fecdd3',
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                   <span style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: isCorrect ? '#15803d' : '#be123c' }}>
                     QUESTION {ans.question_number || idx + 1}
                   </span>
                   {isCorrect ? (
                     <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#15803d', fontSize: '12px', fontWeight: 800 }}>
-                      <CheckCircle size={15} /> Correct (+1)
+                      <CheckCircle size={14} /> Correct (+1)
                     </span>
                   ) : (
                     <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#be123c', fontSize: '12px', fontWeight: 800 }}>
-                      <XCircle size={15} /> Incorrect (0)
+                      <XCircle size={14} /> Incorrect (0)
                     </span>
                   )}
                 </div>
 
                 {/* Question Text in Bold High Contrast Black */}
-                <p style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a', lineHeight: 1.5, marginBottom: '14px' }}>
+                <p style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a', lineHeight: 1.5, marginBottom: '12px' }}>
                   {ans.question_text}
                 </p>
 
@@ -212,6 +158,7 @@ export const AnswerReviewModal = ({ attempt, onClose }) => {
                     background: isCorrect ? '#dcfce7' : '#fee2e2',
                     padding: '8px 12px',
                     borderRadius: '6px',
+                    wordBreak: 'break-word',
                   }}>
                     <strong>Participant's Answer:</strong> Option {ans.selected_key} — {ans.selected_text}
                   </div>
@@ -222,6 +169,7 @@ export const AnswerReviewModal = ({ attempt, onClose }) => {
                       background: '#dcfce7',
                       padding: '8px 12px',
                       borderRadius: '6px',
+                      wordBreak: 'break-word',
                     }}>
                       <strong>Correct Answer:</strong> Option {ans.correct_option.key} — {ans.correct_option.text}
                     </div>
@@ -230,6 +178,12 @@ export const AnswerReviewModal = ({ attempt, onClose }) => {
               </div>
             );
           })}
+        </div>
+
+        <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'flex-end' }}>
+          <button onClick={onClose} className="btn-secondary" style={{ padding: '8px 20px', fontSize: '13px' }}>
+            Close
+          </button>
         </div>
       </div>
     </div>

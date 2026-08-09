@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ReactDOM from 'react-dom';
 import { Search, Filter, ArrowRight, Edit3, Trash2, Eye, ChevronLeft, ChevronRight, Calendar, AlertTriangle, X } from 'lucide-react';
 import { CustomDropdown } from '../../components/CustomDropdown';
 
@@ -321,36 +322,26 @@ export const QuizHistoryView = ({ quizzes, onSelectQuiz, onEditQuiz, onDeleteQui
       </div>
 
       {/* Delete Confirmation Modal */}
-      {quizToDelete && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(15, 23, 42, 0.65)',
-            backdropFilter: 'blur(4px)',
-            zIndex: 1000,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '20px',
-          }}
-          onClick={() => setQuizToDelete(null)}
-        >
+      {quizToDelete && ReactDOM.createPortal(
+        <div className="modal-overlay" onClick={() => setQuizToDelete(null)}>
           <div
-            className="glass-card animate-fade-in"
-            style={{
-              width: '100%',
-              maxWidth: '480px',
-              background: '#ffffff',
-              padding: '24px',
-              borderRadius: '16px',
-            }}
+            className="modal-container modal-container-sm"
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+            <button
+              type="button"
+              onClick={() => setQuizToDelete(null)}
+              className="modal-close-btn"
+              title="Cancel"
+            >
+              <X size={18} />
+            </button>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', paddingRight: '36px' }}>
               <div style={{
                 width: '42px',
                 height: '42px',
+                minWidth: '42px',
                 borderRadius: '10px',
                 background: '#fef2f2',
                 border: '1px solid #fecaca',
@@ -362,16 +353,16 @@ export const QuizHistoryView = ({ quizzes, onSelectQuiz, onEditQuiz, onDeleteQui
                 <AlertTriangle size={22} />
               </div>
               <div>
-                <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0f172a' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0f172a', margin: 0 }}>
                   Delete Daily Quiz?
                 </h3>
-                <p style={{ fontSize: '12px', color: '#64748b' }}>
+                <p style={{ fontSize: '12px', color: '#64748b', margin: 0 }}>
                   This action cannot be undone.
                 </p>
               </div>
             </div>
 
-            <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
+            <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '18px' }}>
               <div style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a', marginBottom: '4px' }}>
                 {quizToDelete.title}
               </div>
@@ -380,11 +371,11 @@ export const QuizHistoryView = ({ quizzes, onSelectQuiz, onEditQuiz, onDeleteQui
               </div>
             </div>
 
-            <p style={{ fontSize: '13px', color: '#64748b', lineHeight: 1.5, marginBottom: '24px' }}>
+            <p style={{ fontSize: '13px', color: '#64748b', lineHeight: 1.5, marginBottom: '22px' }}>
               Are you sure you want to permanently delete this quiz? All associated questions, options, and participant attempts will also be removed.
             </p>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', flexWrap: 'wrap' }}>
               <button
                 onClick={() => setQuizToDelete(null)}
                 className="btn-secondary"
@@ -415,7 +406,8 @@ export const QuizHistoryView = ({ quizzes, onSelectQuiz, onEditQuiz, onDeleteQui
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

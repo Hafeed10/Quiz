@@ -121,74 +121,20 @@ export const ParticipantLoginModal = ({ isOpen, onClose, onLoginSuccess }) => {
   if (!isOpen) return null;
 
   const modalContent = (
-    <div
-      onClick={onClose}
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        width: '100vw',
-        height: '100vh',
-        zIndex: 9999999,
-        backgroundColor: 'rgba(0, 0, 0, 0.75)',
-        backdropFilter: 'blur(6px)',
-        WebkitBackdropFilter: 'blur(6px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '16px',
-        boxSizing: 'border-box',
-        animation: 'fadeIn 0.15s ease-out',
-      }}
-    >
+    <div className="modal-overlay" onClick={onClose}>
       <div
+        className="modal-container modal-container-md"
         onClick={(e) => e.stopPropagation()}
-        className="glass-card animate-fade-in"
-        style={{
-          maxWidth: '520px',
-          width: '100%',
-          maxHeight: '90vh',
-          overflowY: 'auto',
-          padding: '28px',
-          position: 'relative',
-          background: '#ffffff',
-          border: '1.5px solid #cbd5e1',
-          borderRadius: '16px',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
-        }}
       >
         {/* Close Button */}
         <button
           type="button"
           onClick={onClose}
-          style={{
-            position: 'absolute',
-            top: '18px',
-            right: '18px',
-            background: '#f1f5f9',
-            border: '1px solid #cbd5e1',
-            color: '#475569',
-            width: '32px',
-            height: '32px',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            transition: 'all 0.15s ease',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#e2e8f0';
-            e.currentTarget.style.color = '#0f172a';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = '#f1f5f9';
-            e.currentTarget.style.color = '#475569';
-          }}
+          className="modal-close-btn"
+          title="Close login"
+          aria-label="Close login"
         >
-          <X size={16} />
+          <X size={18} />
         </button>
 
         {/* Modal Header */}
