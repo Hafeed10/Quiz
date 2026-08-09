@@ -44,6 +44,22 @@ class QuizCoreTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.data['exists'])
         self.assertEqual(response.data['name'], "Rahul Sharma")
+        self.assertIn('history', response.data)
+
+    def test_get_participant_history_endpoint(self):
+        # Create an attempt for Rahul
+        Attempt.objects.create(
+            quiz=self.quiz,
+            participant=self.participant,
+            score=4,
+            status='COMPLETED'
+        )
+        response = self.client.get(f'/api/participant/history/?phone=9876543210')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data['exists'])
+        self.assertEqual(response.data['total_attempts'], 1)
+        self.assertEqual(len(response.data['attempts']), 1)
+        self.assertEqual(response.data['attempts'][0]['status'], 'COMPLETED')
 
     def test_participant_login_and_auto_fill(self):
         response = self.client.post('/api/auth/participant/', {

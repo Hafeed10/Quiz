@@ -27,6 +27,11 @@ async function request(endpoint, options = {}) {
 export const api = {
   // Participant
   lookupParticipant: (phone) => request(`/auth/lookup/?phone=${encodeURIComponent(phone)}`),
+  getParticipantHistory: (phoneOrId) => {
+    const isId = typeof phoneOrId === 'number' || (/^\d+$/.test(phoneOrId) && String(phoneOrId).length < 8);
+    const param = isId ? `participant_id=${phoneOrId}` : `phone=${encodeURIComponent(phoneOrId)}`;
+    return request(`/participant/history/?${param}`);
+  },
   authParticipant: (name, phone_number) => request('/auth/participant/', {
     method: 'POST',
     body: JSON.stringify({ name, phone_number }),

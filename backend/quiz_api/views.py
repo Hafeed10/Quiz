@@ -1,7 +1,7 @@
 import re
 from django.db.models import Avg, Max, Count
 from django.utils import timezone
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 from rest_framework import status, viewsets
 from rest_framework.decorators import api_view, action
 from rest_framework.response import Response
@@ -12,6 +12,32 @@ from .serializers import (
     AdminQuizSerializer, AdminAttemptSerializer, QuestionOptionPublicSerializer
 )
 
+def get_next_quiz_info():
+    today = timezone.localdate()
+    next_quiz = Quiz.objects.filter(quiz_date__gt=today).exclude(status='DRAFT').order_by('quiz_date', 'start_time').first()
+    if next_quiz:
+        start_str = next_quiz.start_time.strftime('%I:%M %p') if next_quiz.start_time else "10:00 AM"
+        end_str = next_quiz.end_time.strftime('%I:%M %p') if next_quiz.end_time else "04:00 PM"
+        return {
+            "quiz_id": next_quiz.id,
+            "title": next_quiz.title,
+            "date": next_quiz.quiz_date.strftime('%Y-%m-%d'),
+            "date_formatted": next_quiz.quiz_date.strftime('%b %d, %Y'),
+            "time": start_str,
+            "end_time": end_str,
+            "window_text": f"{start_str} to {end_str}",
+        }
+    tomorrow = today + timedelta(days=1)
+    return {
+        "quiz_id": None,
+        "title": "Daily Reading Quiz",
+        "date": tomorrow.strftime('%Y-%m-%d'),
+        "date_formatted": tomorrow.strftime('%b %d, %Y'),
+        "time": "10:00 AM",
+        "end_time": "04:00 PM",
+        "window_text": "10:00 AM to 4:00 PM",
+    }
+
 # ==========================================
 # Participant Endpoints
 # ==========================================
@@ -20,7 +46,7 @@ from .serializers import (
 def lookup_participant(request):
     """
     Check if a participant already exists by phone number.
-    Returns their saved name for auto-recognition.
+    Returns their saved name, next quiz schedule, and completed quizzes history.
     GET /api/auth/lookup/?phone=9876543210
     POST /api/auth/lookup/ { "phone_number": "9876543210" }
     """
@@ -35,19 +61,95 @@ def lookup_participant(request):
     if not cleaned:
         return Response({"error": "Phone number is required."}, status=status.HTTP_400_BAD_REQUEST)
 
+    next_quiz = get_next_quiz_info()
     participant = Participant.objects.filter(phone_number=cleaned).first()
     if participant:
+        attempts = Attempt.objects.filter(participant=participant).select_related('quiz').order_by('-submitted_at', '-created_at')
+        attempts_data = []
+        for att in attempts:
+            quiz = att.quiz
+            attempts_data.append({
+                "id": att.id,
+                "quiz_id": quiz.id,
+                "quiz_title": quiz.title,
+                "passage_title": quiz.passage_title,
+                "quiz_date": quiz.quiz_date.strftime('%Y-%m-%d'),
+                "status": att.status,
+                "submitted_at": timezone.localtime(att.submitted_at).strftime('%b %d, %Y - %I:%M %p') if att.submitted_at else "—",
+            })
+
         return Response({
             "exists": True,
             "id": participant.id,
             "name": participant.name,
             "masked_phone": participant.masked_phone,
-            "phone_number": participant.phone_number
+            "phone_number": participant.phone_number,
+            "total_attempts": attempts.count(),
+            "next_quiz": next_quiz,
+            "history": attempts_data
         }, status=status.HTTP_200_OK)
 
-    return Response({"exists": False}, status=status.HTTP_200_OK)
+    return Response({"exists": False, "next_quiz": next_quiz, "history": []}, status=status.HTTP_200_OK)
 
 participant_lookup = lookup_participant
+
+
+@api_view(['GET'])
+def get_participant_history(request):
+    """
+    Get the history of completed quizzes and next quiz schedule for a participant.
+    GET /api/participant/history/?phone=9876543210
+    GET /api/participant/history/?participant_id=1
+    """
+    phone = request.GET.get('phone') or request.GET.get('phone_number')
+    participant_id = request.GET.get('participant_id')
+    next_quiz = get_next_quiz_info()
+
+    participant = None
+    if participant_id:
+        participant = Participant.objects.filter(id=participant_id).first()
+    elif phone:
+        cleaned = normalize_phone(phone)
+        if cleaned:
+            participant = Participant.objects.filter(phone_number=cleaned).first()
+
+    if not participant:
+        return Response({
+            "exists": False,
+            "next_quiz": next_quiz,
+            "attempts": [],
+            "total_attempts": 0
+        }, status=status.HTTP_200_OK)
+
+    attempts = Attempt.objects.filter(participant=participant).select_related('quiz').order_by('-submitted_at', '-created_at')
+    
+    attempts_data = []
+    for att in attempts:
+        quiz = att.quiz
+        attempts_data.append({
+            "id": att.id,
+            "quiz_id": quiz.id,
+            "quiz_title": quiz.title,
+            "passage_title": quiz.passage_title,
+            "quiz_date": quiz.quiz_date.strftime('%Y-%m-%d'),
+            "status": att.status,
+            "submitted_at": timezone.localtime(att.submitted_at).strftime('%b %d, %Y - %I:%M %p') if att.submitted_at else "—",
+        })
+
+    return Response({
+        "exists": True,
+        "participant": {
+            "id": participant.id,
+            "name": participant.name,
+            "phone_number": participant.phone_number,
+            "masked_phone": participant.masked_phone
+        },
+        "total_attempts": attempts.count(),
+        "completed_count": attempts.filter(status='COMPLETED').count(),
+        "next_quiz": next_quiz,
+        "attempts": attempts_data
+    }, status=status.HTTP_200_OK)
+
 
 
 @api_view(['POST'])

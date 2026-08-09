@@ -17,7 +17,7 @@ export const QuizBuilder = ({ quizToEdit, onSaved, onCancel }) => {
   const [title, setTitle] = useState(quizToEdit?.title || '');
   const [quizDate, setQuizDate] = useState(quizToEdit?.quiz_date || new Date().toISOString().split('T')[0]);
   const [startTime, setStartTime] = useState(quizToEdit?.start_time || '10:00');
-  const [endTime, setEndTime] = useState(quizToEdit?.end_time || '10:05');
+  const [endTime, setEndTime] = useState(quizToEdit?.end_time || '16:00');
   const [durationMinutes, setDurationMinutes] = useState(quizToEdit?.duration_minutes || 5);
   const [passageTitle, setPassageTitle] = useState(quizToEdit?.passage_title || '');
   const [passageContent, setPassageContent] = useState(quizToEdit?.passage_content || '');

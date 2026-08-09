@@ -227,7 +227,7 @@ export function App() {
         setCurrentView={handleViewChange}
         openLoginModal={() => {
           setLoginModalOpen(true);
-          pushHash('login');
+          window.location.hash = '#login';
         }}
         isQuizOpen={currentView === 'participant' && participantSubView === 'quiz'}
       />

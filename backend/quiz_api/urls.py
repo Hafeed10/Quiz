@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     participant_lookup,
     participant_auth,
+    get_participant_history,
     get_today_quiz,
     submit_quiz_attempt,
     AdminQuizViewSet,
@@ -20,6 +21,7 @@ urlpatterns = [
     # Participant Authentication & Recognition
     path('auth/lookup/', participant_lookup, name='participant-lookup'),
     path('auth/participant/', participant_auth, name='participant-auth'),
+    path('participant/history/', get_participant_history, name='participant-history'),
 
     # Participant Quiz Endpoints
     path('quiz/today/', get_today_quiz, name='today-quiz'),

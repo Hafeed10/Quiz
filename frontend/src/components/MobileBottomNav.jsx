@@ -45,7 +45,17 @@ export const MobileBottomNav = ({ currentView, setCurrentView, openLoginModal, i
   ];
 
   return (
-    <nav className="mobile-bottom-nav" aria-label="Mobile App Navigation">
+    <nav
+      className="mobile-bottom-nav"
+      aria-label="Mobile App Navigation"
+      style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 9999,
+      }}
+    >
       <div className="mobile-bottom-nav-inner">
         {tabs.map((tab) => {
           const isActive = currentView === tab.key;

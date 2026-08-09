@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../api/client';
-import { Clock, BookOpen, CheckCircle, AlertCircle, Send } from 'lucide-react';
+import { Clock, BookOpen, CheckCircle2, AlertCircle, Check } from 'lucide-react';
 
 export const DailyQuizPage = ({ quiz, onSubmitted, onQuizExpired }) => {
   const { participant } = useAuth();
@@ -48,10 +48,11 @@ export const DailyQuizPage = ({ quiz, onSubmitted, onQuizExpired }) => {
 
   const answeredCount = Object.keys(answers).length;
   const totalQuestions = quiz?.questions?.length || 4;
+  const progressPercent = (answeredCount / totalQuestions) * 100;
   const isUrgent = secondsRemaining < 60;
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     setErrorMessage('');
 
     if (!participant) {
@@ -91,95 +92,102 @@ export const DailyQuizPage = ({ quiz, onSubmitted, onQuizExpired }) => {
   };
 
   return (
-    <div className="app-container animate-fade-in">
-      {/* Sticky Top Timer HUD Bar in Crisp White */}
-      <div className="sticky-timer-bar" style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: '28px',
+    <div className="app-container animate-fade-in" style={{ paddingBottom: '140px' }}>
+      {/* Sub-Header Status & Progress HUD */}
+      <div style={{
+        background: '#ffffff',
+        border: '1px solid #e2e8f0',
+        borderRadius: '12px',
+        padding: '12px 16px',
+        marginBottom: '20px',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span className="badge badge-live">Live Quiz</span>
-          <span style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a' }}>
-            {quiz.title}
-          </span>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          {/* Answer Progress Indicator */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#475569' }}>
-            <span>{answeredCount} of {totalQuestions} answered</span>
-            <div style={{ width: '64px', height: '6px', background: '#e2e8f0', borderRadius: '999px', overflow: 'hidden' }}>
-              <div style={{
-                width: `${(answeredCount / totalQuestions) * 100}%`,
-                height: '100%',
-                background: '#059669',
-                transition: 'width 0.25s ease',
-              }} />
-            </div>
-          </div>
-
-          {/* Timer Countdown in Dark Green */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            background: isUrgent ? '#fff1f2' : '#ecfdf5',
-            border: isUrgent ? '1px solid #fecdd3' : '1px solid #a7f3d0',
-            padding: '5px 14px',
-            borderRadius: 'var(--radius-md)',
-          }}>
-            <Clock size={15} color={isUrgent ? '#e11d48' : '#065f46'} />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0 }}>
             <span style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '15px',
+              background: '#e0e7ff',
+              color: '#3730a3',
+              fontSize: '10px',
               fontWeight: 800,
-              color: isUrgent ? '#e11d48' : '#065f46',
-              letterSpacing: '0.05em',
+              padding: '2px 8px',
+              borderRadius: '4px',
+              letterSpacing: '0.04em',
+              flexShrink: 0,
             }}>
-              {formatTimer(secondsRemaining)}
+              LIVE QUIZ
+            </span>
+            <span style={{
+              fontSize: '13px',
+              fontWeight: 800,
+              color: '#0f172a',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}>
+              {quiz.title}
             </span>
           </div>
+
+          <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 600, flexShrink: 0, marginLeft: '8px' }}>
+            {answeredCount} of {totalQuestions} answered
+          </div>
+        </div>
+
+        {/* Full-width Green Progress Bar */}
+        <div style={{
+          width: '100%',
+          height: '4px',
+          background: '#e2e8f0',
+          borderRadius: '999px',
+          overflow: 'hidden',
+        }}>
+          <div style={{
+            width: `${progressPercent}%`,
+            height: '100%',
+            background: '#059669',
+            transition: 'width 0.25s ease',
+          }} />
         </div>
       </div>
 
       {/* Reading Passage Card */}
       <div className="glass-card" style={{
-        padding: '30px 28px',
-        marginBottom: '32px',
+        padding: '20px',
+        marginBottom: '24px',
         borderLeft: '4px solid #065f46',
+        background: '#ffffff',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
           <div style={{
-            width: '36px',
-            height: '36px',
-            borderRadius: '8px',
+            width: '34px',
+            height: '34px',
+            borderRadius: '50%',
             background: '#ecfdf5',
             border: '1px solid #a7f3d0',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            flexShrink: 0,
           }}>
-            <BookOpen size={18} color="#065f46" />
+            <BookOpen size={16} color="#065f46" />
           </div>
           <div>
-            <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#0f172a' }}>
-              {quiz.passage_title || 'Reading Passage'}
+            <h2 style={{ fontSize: '16px', fontWeight: 800, color: '#0f172a', lineHeight: 1.2 }}>
+              {quiz.passage_title || 'Life in the Abyss'}
             </h2>
-            <p style={{ fontSize: '12px', color: '#64748b' }}>
-              {quiz.instructions || 'Read the following paragraph carefully before answering the 4 questions below.'}
+            <p style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+              Read the passage before answering.
             </p>
           </div>
         </div>
 
         <div style={{
-          fontSize: '15px',
-          lineHeight: '1.8',
+          fontSize: '14px',
+          lineHeight: '1.7',
           color: '#334155',
           background: '#f8fafc',
-          padding: '22px 24px',
-          borderRadius: 'var(--radius-md)',
+          padding: '16px',
+          borderRadius: '8px',
           border: '1px solid #e2e8f0',
           whiteSpace: 'pre-line',
           letterSpacing: '0.01em',
@@ -188,9 +196,9 @@ export const DailyQuizPage = ({ quiz, onSubmitted, onQuizExpired }) => {
         </div>
       </div>
 
-      {/* 4 Multiple-Choice Questions Form */}
+      {/* 4 Multiple-Choice Questions */}
       <form onSubmit={handleSubmit}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
           {quiz.questions?.map((q, idx) => {
             const isUnanswered = unansweredHighlight.includes(q.id);
             const isAnswered = !!answers[q.id];
@@ -201,7 +209,8 @@ export const DailyQuizPage = ({ quiz, onSubmitted, onQuizExpired }) => {
                 ref={(el) => (questionRefs.current[q.id] = el)}
                 className="glass-card"
                 style={{
-                  padding: '24px',
+                  padding: '20px',
+                  background: '#ffffff',
                   borderColor: isUnanswered
                     ? '#e11d48'
                     : isAnswered
@@ -209,35 +218,35 @@ export const DailyQuizPage = ({ quiz, onSubmitted, onQuizExpired }) => {
                     : '#e2e8f0',
                   boxShadow: isUnanswered
                     ? '0 0 0 2px rgba(225, 29, 72, 0.15)'
-                    : undefined,
+                    : '0 1px 3px rgba(0, 0, 0, 0.03)',
                   transition: 'var(--transition-smooth)',
                 }}
               >
                 {/* Question Header */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                   <span style={{
                     fontSize: '11px',
                     fontWeight: 800,
                     textTransform: 'uppercase',
-                    letterSpacing: '0.08em',
+                    letterSpacing: '0.06em',
                     color: isAnswered ? '#065f46' : '#64748b',
                   }}>
-                    Question {q.question_number || idx + 1} of {totalQuestions}
+                    QUESTION {q.question_number || idx + 1} OF {totalQuestions}
                   </span>
                   {isAnswered && (
                     <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#065f46', fontWeight: 700 }}>
-                      <CheckCircle size={13} /> Selected
+                      <Check size={13} strokeWidth={3} /> Answered
                     </span>
                   )}
                 </div>
 
                 {/* Question Text */}
-                <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#0f172a', marginBottom: '18px', lineHeight: 1.5 }}>
+                <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#0f172a', marginBottom: '14px', lineHeight: 1.45 }}>
                   {q.question_text}
                 </h3>
 
-                {/* 4 Options Grid */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
+                {/* 4 Options */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {q.options?.map((opt) => {
                     const isSelected = answers[q.id] === opt.id;
                     return (
@@ -245,15 +254,39 @@ export const DailyQuizPage = ({ quiz, onSubmitted, onQuizExpired }) => {
                         key={opt.id}
                         onClick={() => handleSelectOption(q.id, opt.id)}
                         className={`option-card ${isSelected ? 'selected' : ''}`}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '12px',
+                          padding: '12px 14px',
+                          borderRadius: '8px',
+                          border: isSelected ? '1.5px solid #065f46' : '1px solid #e2e8f0',
+                          background: isSelected ? '#ecfdf5' : '#ffffff',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease',
+                        }}
                       >
-                        <div className="option-badge">
+                        <div style={{
+                          width: '28px',
+                          height: '28px',
+                          borderRadius: '50%',
+                          border: isSelected ? '1.5px solid #065f46' : '1px solid #cbd5e1',
+                          background: isSelected ? '#065f46' : '#f8fafc',
+                          color: isSelected ? '#ffffff' : '#475569',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '12px',
+                          fontWeight: 800,
+                          flexShrink: 0,
+                        }}>
                           {opt.option_key}
                         </div>
                         <div style={{
-                          fontSize: '14px',
-                          color: isSelected ? '#065f46' : '#334155',
+                          fontSize: '13px',
+                          color: isSelected ? '#065f46' : '#1e293b',
                           fontWeight: isSelected ? 700 : 500,
-                          lineHeight: 1.4,
+                          lineHeight: 1.35,
                         }}>
                           {opt.option_text}
                         </div>
@@ -272,42 +305,58 @@ export const DailyQuizPage = ({ quiz, onSubmitted, onQuizExpired }) => {
             background: '#fff1f2',
             border: '1px solid #fecdd3',
             color: '#be123c',
-            padding: '14px 18px',
+            padding: '12px 16px',
             borderRadius: 'var(--radius-md)',
-            marginTop: '24px',
+            marginTop: '20px',
             display: 'flex',
             alignItems: 'center',
             gap: '10px',
             fontSize: '13px',
           }}>
-            <AlertCircle size={18} color="#e11d48" />
+            <AlertCircle size={16} color="#e11d48" />
             <span>{errorMessage}</span>
           </div>
         )}
 
-        {/* Submit Action Bar with Dark Green Button */}
+        {/* Fixed Bottom Sticky Submission Bar */}
         <div style={{
-          marginTop: '32px',
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          background: '#ffffff',
+          borderTop: '1px solid #e2e8f0',
+          boxShadow: '0 -4px 16px rgba(0, 0, 0, 0.08)',
+          padding: '12px 16px calc(12px + env(safe-area-inset-bottom, 0px))',
+          zIndex: 9999,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: '10px',
+          gap: '6px',
         }}>
           <button
             type="submit"
             disabled={submitting}
             className="btn-primary"
-            style={{ width: '100%', maxWidth: '380px', padding: '15px', fontSize: '15px' }}
+            style={{
+              width: '100%',
+              maxWidth: '520px',
+              padding: '14px',
+              fontSize: '15px',
+              fontWeight: 800,
+              background: '#065f46',
+              borderRadius: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+            }}
           >
-            {submitting ? 'Submitting Answers...' : (
-              <>
-                <Send size={16} />
-                Submit Answers ({answeredCount}/{totalQuestions})
-              </>
-            )}
+            <CheckCircle2 size={18} />
+            {submitting ? 'Submitting Answers...' : `Submit Answers (${answeredCount}/${totalQuestions})`}
           </button>
-          <span style={{ fontSize: '12px', color: '#64748b' }}>
-            Submitting is final. You cannot modify answers or re-attempt today.
+          <span style={{ fontSize: '11px', color: '#64748b', textAlign: 'center' }}>
+            Submitting is final. You cannot modify answers once attempted today.
           </span>
         </div>
       </form>

@@ -179,7 +179,7 @@ export const AdminDashboard = () => {
             </span>
           </div>
           <div style={{ fontSize: '12px', color: '#64748b', marginTop: '8px', fontFamily: 'var(--font-mono)' }}>
-            Window: {todayStats.start_time || '10:00'} – {todayStats.end_time || '10:05'}
+            Window: {todayStats.start_time || '10:00'} – {todayStats.end_time || '16:00'}
           </div>
         </div>
 

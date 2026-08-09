@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../api/client';
-import { Phone, User, X, CheckCircle2, ArrowRight, ShieldCheck } from 'lucide-react';
+import {
+  Phone, User, X, CheckCircle2, ArrowRight, ShieldCheck,
+  History, Trophy, Calendar, Award, LogOut, BookOpen, Clock
+} from 'lucide-react';
 
 export const ParticipantLoginModal = ({ isOpen, onClose, onLoginSuccess }) => {
-  const { loginParticipant } = useAuth();
+  const { participant, loginParticipant, logoutParticipant } = useAuth();
   const [phoneNumber, setPhoneNumber] = useState('');
   const [name, setName] = useState('');
   const [isRecognized, setIsRecognized] = useState(false);
@@ -13,16 +16,46 @@ export const ParticipantLoginModal = ({ isOpen, onClose, onLoginSuccess }) => {
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
+  // History & Schedule state
+  const [quizHistory, setQuizHistory] = useState([]);
+  const [nextQuiz, setNextQuiz] = useState(null);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  const fetchHistory = async (phoneOrId) => {
+    setHistoryLoading(true);
+    try {
+      const res = await api.getParticipantHistory(phoneOrId);
+      if (res.exists) {
+        setQuizHistory(res.attempts || res.history || []);
+        if (res.next_quiz) setNextQuiz(res.next_quiz);
+      }
+    } catch (err) {
+      console.error('Error loading participant history', err);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (isOpen) {
       setErrorMessage('');
+      if (participant) {
+        setPhoneNumber(participant.phone_number || '');
+        setName(participant.name || '');
+        setIsRecognized(true);
+        fetchHistory(participant.id);
+      } else {
+        setQuizHistory([]);
+        setIsRecognized(false);
+      }
     }
+
     const handleKeyDown = (e) => {
       if (e.key === 'Escape' && isOpen) onClose();
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, participant, onClose]);
 
   const handlePhoneChange = async (e) => {
     const val = e.target.value;
@@ -37,8 +70,11 @@ export const ParticipantLoginModal = ({ isOpen, onClose, onLoginSuccess }) => {
         if (res.exists && res.name) {
           setName(res.name);
           setIsRecognized(true);
+          setQuizHistory(res.history || []);
+          if (res.next_quiz) setNextQuiz(res.next_quiz);
         } else {
           setIsRecognized(false);
+          setQuizHistory([]);
         }
       } catch (err) {
         // silent
@@ -47,6 +83,7 @@ export const ParticipantLoginModal = ({ isOpen, onClose, onLoginSuccess }) => {
       }
     } else {
       setIsRecognized(false);
+      setQuizHistory([]);
     }
   };
 
@@ -84,7 +121,6 @@ export const ParticipantLoginModal = ({ isOpen, onClose, onLoginSuccess }) => {
   if (!isOpen) return null;
 
   const modalContent = (
-    /* Full Black Opacity Backdrop Overlay mounted directly to document.body */
     <div
       onClick={onClose}
       style={{
@@ -96,7 +132,7 @@ export const ParticipantLoginModal = ({ isOpen, onClose, onLoginSuccess }) => {
         width: '100vw',
         height: '100vh',
         zIndex: 9999999,
-        backgroundColor: 'rgba(0, 0, 0, 0.75)', // Deep rich black opacity
+        backgroundColor: 'rgba(0, 0, 0, 0.75)',
         backdropFilter: 'blur(6px)',
         WebkitBackdropFilter: 'blur(6px)',
         display: 'flex',
@@ -111,9 +147,11 @@ export const ParticipantLoginModal = ({ isOpen, onClose, onLoginSuccess }) => {
         onClick={(e) => e.stopPropagation()}
         className="glass-card animate-fade-in"
         style={{
-          maxWidth: '460px',
+          maxWidth: '520px',
           width: '100%',
-          padding: '32px',
+          maxHeight: '90vh',
+          overflowY: 'auto',
+          padding: '28px',
           position: 'relative',
           background: '#ffffff',
           border: '1.5px solid #cbd5e1',
@@ -154,25 +192,25 @@ export const ParticipantLoginModal = ({ isOpen, onClose, onLoginSuccess }) => {
         </button>
 
         {/* Modal Header */}
-        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
           <div style={{
-            width: '52px',
-            height: '52px',
+            width: '48px',
+            height: '48px',
             borderRadius: '14px',
             background: '#ecfdf5',
             border: '1px solid #a7f3d0',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
-            marginBottom: '12px',
+            marginBottom: '10px',
           }}>
-            <User size={24} color="#065f46" />
+            <User size={22} color="#065f46" />
           </div>
-          <h2 style={{ fontSize: '22px', fontWeight: 900, color: '#0f172a', marginBottom: '6px' }}>
-            Participant Sign-In
+          <h2 style={{ fontSize: '20px', fontWeight: 900, color: '#0f172a', marginBottom: '4px' }}>
+            {participant ? `Account: ${participant.name}` : 'Participant Sign-In'}
           </h2>
           <p style={{ fontSize: '13px', color: '#64748b' }}>
-            Enter your phone number & name to access today's timed daily quiz.
+            {participant ? 'View your past quiz scores and active session details.' : "Enter your phone number & name to access today's timed daily quiz."}
           </p>
         </div>
 
@@ -185,102 +223,314 @@ export const ParticipantLoginModal = ({ isOpen, onClose, onLoginSuccess }) => {
             borderRadius: '8px',
             fontSize: '12px',
             fontWeight: 600,
-            marginBottom: '18px',
+            marginBottom: '16px',
           }}>
             {errorMessage}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {/* Phone Number Input */}
-          <div>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#334155', marginBottom: '6px' }}>
-              Phone Number
-            </label>
-            <div style={{ position: 'relative' }}>
-              <Phone size={16} color="#94a3b8" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
-              <input
-                type="tel"
-                placeholder="e.g. 9876543210"
-                value={phoneNumber}
-                onChange={handlePhoneChange}
-                autoFocus
-                style={{
-                  width: '100%',
-                  paddingLeft: '40px',
-                  paddingRight: '14px',
-                  paddingTop: '11px',
-                  paddingBottom: '11px',
-                  fontSize: '14px',
-                  background: '#ffffff',
-                  border: '1.5px solid #cbd5e1',
-                  borderRadius: '8px',
-                  color: '#0f172a',
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Name Input */}
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-              <label style={{ fontSize: '12px', fontWeight: 800, color: '#334155' }}>
-                Your Full Name
+        {/* Participant Login Form */}
+        {!participant ? (
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            {/* Phone Number Input */}
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#334155', marginBottom: '6px' }}>
+                Phone Number
               </label>
-              {isRecognized && (
-                <span style={{ fontSize: '11px', color: '#065f46', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 700 }}>
-                  <CheckCircle2 size={12} color="#065f46" /> Auto-Recognized
+              <div style={{ position: 'relative' }}>
+                <Phone size={16} color="#94a3b8" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
+                <input
+                  type="tel"
+                  placeholder="e.g. 9876543210"
+                  value={phoneNumber}
+                  onChange={handlePhoneChange}
+                  autoFocus
+                  style={{
+                    width: '100%',
+                    paddingLeft: '40px',
+                    paddingRight: '14px',
+                    paddingTop: '10px',
+                    paddingBottom: '10px',
+                    fontSize: '14px',
+                    background: '#ffffff',
+                    border: '1.5px solid #cbd5e1',
+                    borderRadius: '8px',
+                    color: '#0f172a',
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Name Input */}
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                <label style={{ fontSize: '12px', fontWeight: 800, color: '#334155' }}>
+                  Your Full Name
+                </label>
+                {isRecognized && (
+                  <span style={{ fontSize: '11px', color: '#065f46', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 700 }}>
+                    <CheckCircle2 size={12} color="#065f46" /> Auto-Recognized
+                  </span>
+                )}
+              </div>
+              <div style={{ position: 'relative' }}>
+                <User size={16} color="#94a3b8" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
+                <input
+                  type="text"
+                  placeholder="Enter your name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  style={{
+                    width: '100%',
+                    paddingLeft: '40px',
+                    paddingRight: '14px',
+                    paddingTop: '10px',
+                    paddingBottom: '10px',
+                    fontSize: '14px',
+                    background: '#ffffff',
+                    border: '1.5px solid #cbd5e1',
+                    borderRadius: '8px',
+                    color: '#0f172a',
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Submit Action Button */}
+            <button
+              type="submit"
+              disabled={submitting}
+              className="btn-primary"
+              style={{
+                width: '100%',
+                padding: '12px',
+                fontSize: '14px',
+                fontWeight: 800,
+                justifyContent: 'center',
+                marginTop: '4px',
+              }}
+            >
+              {submitting ? 'Authenticating...' : (
+                <>
+                  Continue to Quiz <ArrowRight size={16} />
+                </>
+              )}
+            </button>
+          </form>
+        ) : (
+          /* Logged-In Participant Profile Action Bar */
+          <div style={{
+            background: '#f8fafc',
+            border: '1px solid #e2e8f0',
+            borderRadius: '10px',
+            padding: '14px 16px',
+            marginBottom: '18px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+            <div>
+              <div style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a' }}>
+                {participant.name}
+              </div>
+              <div style={{ fontSize: '12px', color: '#64748b', fontFamily: 'var(--font-mono)' }}>
+                {participant.phone_number || participant.masked_phone}
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                logoutParticipant();
+                setPhoneNumber('');
+                setName('');
+                setQuizHistory([]);
+                setIsRecognized(false);
+              }}
+              className="btn-secondary"
+              style={{ padding: '6px 12px', fontSize: '12px', gap: '4px' }}
+            >
+              <LogOut size={13} /> Sign Out
+            </button>
+          </div>
+        )}
+
+        {/* ========== COMPLETED QUIZ HISTORY SECTION ========== */}
+        {(quizHistory.length > 0 || isRecognized) && (
+          <div style={{ marginTop: '22px', borderTop: '1px solid #e2e8f0', paddingTop: '18px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <History size={16} color="#065f46" />
+                <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a' }}>
+                  Completed Quiz History
+                </h3>
+              </div>
+              {quizHistory.length > 0 && (
+                <span style={{
+                  fontSize: '11px',
+                  fontWeight: 800,
+                  color: '#065f46',
+                  background: '#ecfdf5',
+                  padding: '2px 10px',
+                  borderRadius: '999px',
+                  border: '1px solid #a7f3d0',
+                }}>
+                  {quizHistory.length} Completed
                 </span>
               )}
             </div>
-            <div style={{ position: 'relative' }}>
-              <User size={16} color="#94a3b8" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
-              <input
-                type="text"
-                placeholder="Enter your name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                style={{
-                  width: '100%',
-                  paddingLeft: '40px',
-                  paddingRight: '14px',
-                  paddingTop: '11px',
-                  paddingBottom: '11px',
-                  fontSize: '14px',
-                  background: '#ffffff',
-                  border: '1.5px solid #cbd5e1',
-                  borderRadius: '8px',
-                  color: '#0f172a',
-                }}
-              />
-            </div>
-          </div>
 
-          {/* Submit Action Button */}
-          <button
-            type="submit"
-            disabled={submitting}
-            className="btn-primary"
-            style={{
-              width: '100%',
-              padding: '13px',
-              fontSize: '14px',
-              fontWeight: 800,
-              justifyContent: 'center',
-              marginTop: '8px',
-            }}
-          >
-            {submitting ? 'Authenticating...' : (
-              <>
-                Continue to Quiz <ArrowRight size={16} />
-              </>
+            {/* Next Quiz Date & Time Schedule Card */}
+            <div style={{
+              background: '#eff6ff',
+              border: '1.5px solid #bfdbfe',
+              borderRadius: '10px',
+              padding: '12px 16px',
+              marginBottom: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '10px',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '8px',
+                  background: '#dbeafe',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}>
+                  <Clock size={18} color="#1d4ed8" />
+                </div>
+                <div>
+                  <span style={{ fontSize: '10px', color: '#1e40af', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block' }}>
+                    Next Assessment Schedule
+                  </span>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a' }}>
+                    {nextQuiz?.date_formatted || 'Tomorrow'} ({nextQuiz?.window_text || '10:00 AM to 4:00 PM'})
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                <span style={{
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  color: '#1d4ed8',
+                  background: '#ffffff',
+                  padding: '4px 10px',
+                  borderRadius: '6px',
+                  border: '1px solid #bfdbfe',
+                  display: 'inline-block',
+                }}>
+                  10:00 AM – 4:00 PM
+                </span>
+              </div>
+            </div>
+
+            {/* 1 Day Completed Notice */}
+            <div style={{
+              background: '#ecfdf5',
+              border: '1px solid #a7f3d0',
+              borderRadius: '8px',
+              padding: '10px 14px',
+              marginBottom: '12px',
+              fontSize: '12px',
+              color: '#065f46',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}>
+              <CheckCircle2 size={16} color="#059669" style={{ flexShrink: 0 }} />
+              <div>
+                <strong>1 Attempt Policy:</strong> Answers submitted successfully. Only 1 attempt allowed per day.
+              </div>
+            </div>
+
+            {historyLoading ? (
+              <div style={{ textAlign: 'center', padding: '16px', color: '#64748b', fontSize: '12px' }}>
+                Loading quiz history...
+              </div>
+            ) : quizHistory.length === 0 ? (
+              <div style={{
+                textAlign: 'center',
+                padding: '16px',
+                background: '#f8fafc',
+                borderRadius: '8px',
+                border: '1px solid #e2e8f0',
+                color: '#64748b',
+                fontSize: '12px',
+              }}>
+                No completed quizzes recorded yet. Take today's quiz to see your completion record here!
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '220px', overflowY: 'auto' }}>
+                {quizHistory.map((item, idx) => (
+                  <div
+                    key={item.id || idx}
+                    style={{
+                      background: '#ffffff',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '8px',
+                      padding: '10px 14px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '10px',
+                      boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
+                    }}
+                  >
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                        <Calendar size={11} color="#64748b" />
+                        <span style={{ fontSize: '11px', color: '#64748b', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
+                          {item.quiz_date}
+                        </span>
+                      </div>
+                      <div style={{
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        color: '#0f172a',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}>
+                        {item.quiz_title}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
+                        Submitted: {item.submitted_at}
+                      </div>
+                    </div>
+
+                    {/* Clean Completed Status Pill (No Answer / Score Exposed) */}
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                      <span style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        padding: '4px 10px',
+                        borderRadius: '999px',
+                        fontSize: '11px',
+                        fontWeight: 800,
+                        background: '#ecfdf5',
+                        color: '#065f46',
+                        border: '1px solid #a7f3d0',
+                      }}>
+                        <CheckCircle2 size={12} color="#059669" />
+                        Completed
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
-          </button>
-        </form>
+          </div>
+        )}
 
         <div style={{
-          marginTop: '20px',
-          paddingTop: '14px',
+          marginTop: '18px',
+          paddingTop: '12px',
           borderTop: '1px solid #f1f5f9',
           display: 'flex',
           alignItems: 'center',

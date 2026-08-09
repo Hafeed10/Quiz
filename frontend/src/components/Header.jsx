@@ -103,31 +103,47 @@ export const Header = ({ currentView, setCurrentView, openLoginModal, isQuizOpen
           </nav>
         </div>
 
-        {/* Mobile Header Avatar (Visible on Mobile) */}
+        {/* Mobile Header Right Item */}
         <div className="header-mobile-avatar-wrap">
-          <button
-            onClick={() => {
-              if (!isQuizOpen) openLoginModal();
-            }}
-            aria-label="User Account"
-            style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              background: '#065f46',
-              color: '#ffffff',
-              display: 'flex',
+          {isQuizOpen ? (
+            <span style={{
+              display: 'inline-flex',
               alignItems: 'center',
-              justifyContent: 'center',
+              gap: '5px',
+              background: '#c8f5df',
+              color: '#065f46',
+              fontSize: '12px',
               fontWeight: 800,
-              fontSize: '13px',
-              border: 'none',
-              cursor: 'pointer',
-              boxShadow: '0 2px 6px rgba(6, 95, 70, 0.25)',
-            }}
-          >
-            {userInitial}
-          </button>
+              padding: '4px 10px',
+              borderRadius: '999px',
+              fontFamily: 'var(--font-mono)',
+            }}>
+              <Clock size={13} color="#065f46" />
+              <span>04:59</span>
+            </span>
+          ) : (
+            <button
+              onClick={openLoginModal}
+              aria-label="User Account"
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                background: '#065f46',
+                color: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 800,
+                fontSize: '13px',
+                border: 'none',
+                cursor: 'pointer',
+                boxShadow: '0 2px 6px rgba(6, 95, 70, 0.25)',
+              }}
+            >
+              {userInitial}
+            </button>
+          )}
         </div>
 
         {/* Right: Participant Info & Desktop Actions */}

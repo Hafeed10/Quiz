@@ -425,22 +425,20 @@ input:focus, textarea:focus, select:focus {
 }
 
 /* ========== MOBILE BOTTOM NAV ========== */
-.mobile-bottom-nav {
-  position: fixed;
 .header-mobile-avatar-wrap {
   display: none;
 }
 
 .mobile-bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 9999 !important;
   background: #ffffff;
   border-top: 1px solid #e2e8f0;
-  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.05);
-  padding: 6px 12px calc(6px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+  padding: 6px 12px calc(8px + env(safe-area-inset-bottom, 0px));
   display: none; /* Hidden on desktop, shown on mobile via media query */
 }
 
@@ -489,7 +487,6 @@ input:focus, textarea:focus, select:focus {
   font-weight: 700;
   line-height: 1.2;
 }
-
 /* ========== RESPONSIVE BREAKPOINTS ========== */
 
 /* ---- Tablet (768px - 1024px) ---- */

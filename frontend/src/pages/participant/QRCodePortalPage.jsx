@@ -225,24 +225,49 @@ export const QRCodePortalPage = ({ quizData, onOpenWebsite, onOpenAdmin }) => {
               Open Website & Participate <ArrowRight size={18} />
             </button>
 
-            <div style={{ display: 'flex', gap: '10px' }}>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '10px',
+              width: '100%',
+            }}>
               <button
                 onClick={handleCopyLink}
                 className="btn-secondary"
-                style={{ flex: 1, padding: '10px', fontSize: '12px', justifyContent: 'center' }}
+                style={{
+                  padding: '11px 8px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  whiteSpace: 'nowrap',
+                  width: '100%',
+                }}
               >
-                {copied ? <Check size={14} color="#059669" /> : <Copy size={14} />}
-                {copied ? 'Link Copied!' : 'Copy Web Link'}
+                {copied ? <Check size={16} color="#059669" style={{ flexShrink: 0 }} /> : <Copy size={16} style={{ flexShrink: 0 }} />}
+                <span>{copied ? 'Link Copied!' : 'Copy Web Link'}</span>
               </button>
 
               <button
                 onClick={handlePrint}
                 className="btn-secondary"
-                style={{ padding: '10px 14px', fontSize: '12px', justifyContent: 'center' }}
+                style={{
+                  padding: '11px 8px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  whiteSpace: 'nowrap',
+                  width: '100%',
+                }}
                 title="Project or Print QR Code"
               >
-                <Printer size={14} color="#065f46" />
-                Print / Project
+                <Printer size={16} color="#065f46" style={{ flexShrink: 0 }} />
+                <span>Print / Project</span>
               </button>
             </div>
           </div>
