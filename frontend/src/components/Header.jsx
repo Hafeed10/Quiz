@@ -5,6 +5,8 @@ import { BookOpen, ShieldCheck, LogOut, Lock, User, QrCode, Clock } from 'lucide
 export const Header = ({ currentView, setCurrentView, openLoginModal, isQuizOpen = false }) => {
   const { participant, logoutParticipant, isAdmin, logoutAdmin } = useAuth();
 
+  const userInitial = participant?.name ? participant.name.charAt(0).toUpperCase() : 'U';
+
   return (
     <header style={{
       borderBottom: '1px solid #e2e8f0',
@@ -55,7 +57,7 @@ export const Header = ({ currentView, setCurrentView, openLoginModal, isQuizOpen
             <span>Daily<span style={{ color: '#059669' }}>Quiz</span></span>
           </div>
 
-          {/* Navigation Links — No admin buttons */}
+          {/* Navigation Links — Desktop */}
           <nav className="header-desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             {!isQuizOpen && (
               <button
@@ -101,7 +103,34 @@ export const Header = ({ currentView, setCurrentView, openLoginModal, isQuizOpen
           </nav>
         </div>
 
-        {/* Right: Participant Info & Actions */}
+        {/* Mobile Header Avatar (Visible on Mobile) */}
+        <div className="header-mobile-avatar-wrap">
+          <button
+            onClick={() => {
+              if (!isQuizOpen) openLoginModal();
+            }}
+            aria-label="User Account"
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              background: '#065f46',
+              color: '#ffffff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: 800,
+              fontSize: '13px',
+              border: 'none',
+              cursor: 'pointer',
+              boxShadow: '0 2px 6px rgba(6, 95, 70, 0.25)',
+            }}
+          >
+            {userInitial}
+          </button>
+        </div>
+
+        {/* Right: Participant Info & Desktop Actions */}
         <div className="header-admin-controls" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           {/* Active Quiz Session Indicator */}
           {isQuizOpen && (
@@ -147,7 +176,7 @@ export const Header = ({ currentView, setCurrentView, openLoginModal, isQuizOpen
                   fontWeight: 700,
                   fontSize: '11px',
                 }}>
-                  {participant.name.charAt(0).toUpperCase()}
+                  {userInitial}
                 </div>
                 <div style={{ textAlign: 'left' }}>
                   <div style={{ fontSize: '12px', fontWeight: 700, color: '#0f172a' }}>

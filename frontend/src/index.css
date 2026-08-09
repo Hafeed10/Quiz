@@ -427,14 +427,20 @@ input:focus, textarea:focus, select:focus {
 /* ========== MOBILE BOTTOM NAV ========== */
 .mobile-bottom-nav {
   position: fixed;
+.header-mobile-avatar-wrap {
+  display: none;
+}
+
+.mobile-bottom-nav {
+  position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   z-index: 100;
   background: #ffffff;
   border-top: 1px solid #e2e8f0;
-  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.06);
-  padding: 8px 0 calc(8px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.05);
+  padding: 6px 12px calc(6px + env(safe-area-inset-bottom, 0px));
   display: none; /* Hidden on desktop, shown on mobile via media query */
 }
 
@@ -450,38 +456,38 @@ input:focus, textarea:focus, select:focus {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  padding: 6px 12px;
-  border-radius: 8px;
+  justify-content: center;
+  gap: 2px;
+  padding: 6px 14px;
+  border-radius: 12px;
   border: none;
   background: transparent;
   cursor: pointer;
   font-family: var(--font-sans);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
-  color: #64748b;
-  transition: color 0.15s ease;
+  color: #334155;
+  transition: all 0.15s ease;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
-  min-width: 56px;
+  min-width: 64px;
 }
 
 .mobile-nav-btn.active {
+  background: #c8f5df;
   color: #065f46;
 }
 
-.mobile-nav-btn.active .mobile-nav-icon {
-  background: #ecfdf5;
-}
-
 .mobile-nav-icon {
-  width: 36px;
-  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
-  transition: background 0.15s ease;
+}
+
+.mobile-nav-label {
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.2;
 }
 
 /* ========== RESPONSIVE BREAKPOINTS ========== */
@@ -546,6 +552,11 @@ input:focus, textarea:focus, select:focus {
   /* Header navigation tabs: hide on mobile (replaced by bottom nav) */
   .header-desktop-nav {
     display: none !important;
+  }
+
+  /* Show mobile avatar in header */
+  .header-mobile-avatar-wrap {
+    display: block !important;
   }
 
   /* Hide admin controls in header on mobile (bottom nav handles them) */
