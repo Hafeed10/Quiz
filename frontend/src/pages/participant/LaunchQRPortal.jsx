@@ -444,19 +444,10 @@ export const LaunchQRPortal = ({ onProceedToLanding, onProceedToAdmin }) => {
                 <button
                   onClick={handleCopyLink}
                   className="btn-secondary"
-                  style={{ flex: 1, padding: '10px', fontSize: '12px', justifyContent: 'center' }}
+                  style={{ width: '100%', padding: '12px', fontSize: '13px', justifyContent: 'center' }}
                 >
                   {copied ? <Check size={14} color="#059669" /> : <Copy size={14} />}
                   {copied ? 'Link Copied!' : 'Copy Web Link'}
-                </button>
-
-                <button
-                  onClick={onProceedToAdmin}
-                  className="btn-secondary"
-                  style={{ flex: 1, padding: '10px', fontSize: '12px', justifyContent: 'center' }}
-                >
-                  <ShieldCheck size={14} color="#065f46" />
-                  Admin Dashboard
                 </button>
               </div>
             </div>

@@ -42,9 +42,9 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('daily_quiz_participant');
   };
 
-  const loginAdmin = (passcode = 'admin123') => {
-    // Standard secure client passcode for demo/MVP
-    if (passcode === 'admin123' || passcode === 'admin') {
+  const loginAdmin = (passcode = '') => {
+    const clean = String(passcode || '').trim().toLowerCase().replace(/\s+/g, '');
+    if (clean === 'admin123' || clean === 'admin' || clean === 'admin1234') {
       setIsAdmin(true);
       localStorage.setItem('daily_quiz_is_admin', 'true');
       return true;

@@ -296,37 +296,6 @@ export const QRCodePortalPage = ({ quizData, onOpenWebsite, onOpenAdmin }) => {
               </div>
             </div>
           </div>
-
-          {/* Admin Switcher Notice */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            background: '#ffffff',
-            border: '1px solid #e2e8f0',
-            borderRadius: '12px',
-            padding: '12px 18px',
-          }}>
-            <span style={{ fontSize: '12px', color: '#64748b' }}>
-              Administrator or Proctor?
-            </span>
-            <button
-              onClick={onOpenAdmin}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: '#065f46',
-                fontWeight: 700,
-                fontSize: '12px',
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px',
-              }}
-            >
-              Go to Admin Center <ArrowRight size={13} />
-            </button>
-          </div>
         </div>
       </div>
     </div>
