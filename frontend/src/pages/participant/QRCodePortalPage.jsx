@@ -296,7 +296,7 @@ export const QRCodePortalPage = ({ quizData, onOpenWebsite, onOpenAdmin }) => {
 
             <div style={{ display: 'flex', gap: '12px', fontSize: '12px', color: '#64748b', fontWeight: 700 }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <Clock size={14} color="#065f46" /> {quizData?.duration_minutes || 5} Mins Window
+                <Clock size={14} color="#065f46" /> {quizData?.duration_minutes || 20} Mins Window
               </span>
               <span>•</span>
               <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>

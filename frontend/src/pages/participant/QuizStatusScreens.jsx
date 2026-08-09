@@ -214,7 +214,7 @@ export const QuizNotStartedScreen = ({ quiz, onBackHome }) => {
 };
 
 
-export const QuizEndedScreen = ({ onBackHome }) => {
+export const QuizEndedScreen = ({ onBackHome, reason }) => {
   return (
     <div className="glass-card animate-fade-in" style={{
       maxWidth: '520px',
@@ -223,29 +223,29 @@ export const QuizEndedScreen = ({ onBackHome }) => {
       textAlign: 'center',
     }}>
       <div style={{
-        width: '56px',
-        height: '56px',
+        width: '60px',
+        height: '60px',
         borderRadius: '50%',
         background: '#fef2f2',
-        border: '1px solid #fecaca',
+        border: '1.5px solid #fecaca',
         margin: '0 auto 16px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
       }}>
-        <AlertTriangle size={28} color="#dc2626" />
+        <Clock size={30} color="#dc2626" />
       </div>
 
       <span className="badge badge-ended" style={{ marginBottom: '10px' }}>
-        Quiz Expired
+        ⏱ Time Out • Quiz Closed
       </span>
 
       <h2 style={{ fontSize: '22px', fontWeight: 800, marginBottom: '8px', color: '#0f172a' }}>
-        Today's quiz has ended
+        Time Expired
       </h2>
 
       <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '20px', lineHeight: 1.6 }}>
-        The time window for today's daily quiz has expired.
+        The timer for this daily assessment session reached 0:00. The quiz is now closed.
       </p>
 
       <div style={{
@@ -253,14 +253,14 @@ export const QuizEndedScreen = ({ onBackHome }) => {
         border: '1px solid #e2e8f0',
         borderRadius: 'var(--radius-md)',
         padding: '14px',
-        marginBottom: '20px',
+        marginBottom: '24px',
         fontSize: '13px',
         color: 'var(--text-primary)',
       }}>
-        ✨ Please return tomorrow for the next daily challenge!
+        ✨ Thank you for participating. Check back for upcoming scheduled daily quizzes!
       </div>
 
-      <button onClick={onBackHome} className="btn-secondary" style={{ width: '100%' }}>
+      <button onClick={onBackHome} className="btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>
         <ArrowLeft size={15} />
         Back to Home
       </button>

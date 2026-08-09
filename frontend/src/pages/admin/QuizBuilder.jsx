@@ -17,8 +17,8 @@ export const QuizBuilder = ({ quizToEdit, onSaved, onCancel }) => {
   const [title, setTitle] = useState(quizToEdit?.title || '');
   const [quizDate, setQuizDate] = useState(quizToEdit?.quiz_date || new Date().toISOString().split('T')[0]);
   const [startTime, setStartTime] = useState(quizToEdit?.start_time || '10:00');
-  const [endTime, setEndTime] = useState(quizToEdit?.end_time || '16:00');
-  const [durationMinutes, setDurationMinutes] = useState(quizToEdit?.duration_minutes || 5);
+  const [endTime, setEndTime] = useState(quizToEdit?.end_time || '10:05');
+  const [durationMinutes, setDurationMinutes] = useState(quizToEdit?.duration_minutes || 20);
   const [passageTitle, setPassageTitle] = useState(quizToEdit?.passage_title || '');
   const [passageContent, setPassageContent] = useState(quizToEdit?.passage_content || '');
   const [instructions, setInstructions] = useState(
@@ -76,18 +76,45 @@ export const QuizBuilder = ({ quizToEdit, onSaved, onCancel }) => {
     return errs.length === 0;
   };
 
+  const normalizeTimeTo24h = (timeStr) => {
+    if (!timeStr) return '10:00';
+    const str = String(timeStr).trim();
+    const match = str.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?$/i);
+    if (!match) return str;
+    let hours = parseInt(match[1], 10);
+    const minutes = match[2];
+    const modifier = match[3]?.toUpperCase();
+    if (modifier === 'PM' && hours < 12) hours += 12;
+    if (modifier === 'AM' && hours === 12) hours = 0;
+    return `${String(hours).padStart(2, '0')}:${minutes}`;
+  };
+
+  const normalizeDateToISO = (dateStr) => {
+    if (!dateStr) return new Date().toISOString().split('T')[0];
+    const str = String(dateStr).trim();
+    const slashMatch = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (slashMatch) {
+      const [, m, d, y] = slashMatch;
+      return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    }
+    return str;
+  };
+
   const handleSave = async (targetStatus) => {
     if (!validate()) return;
 
     setSaving(true);
+    setErrors([]);
+
+    const finalTitle = title.trim() || passageTitle.trim() || 'Daily Reading Assessment';
     const payload = {
-      title,
-      quiz_date: quizDate,
-      start_time: startTime,
-      end_time: endTime,
-      duration_minutes: Number(durationMinutes),
-      passage_title: passageTitle || title,
-      passage_content: passageContent,
+      title: finalTitle,
+      quiz_date: normalizeDateToISO(quizDate),
+      start_time: normalizeTimeTo24h(startTime),
+      end_time: normalizeTimeTo24h(endTime),
+      duration_minutes: Number(durationMinutes) || 20,
+      passage_title: passageTitle.trim() || finalTitle,
+      passage_content: passageContent.trim(),
       instructions,
       status: targetStatus || status,
       questions,
@@ -102,7 +129,19 @@ export const QuizBuilder = ({ quizToEdit, onSaved, onCancel }) => {
       }
       if (onSaved) onSaved(res);
     } catch (err) {
-      setErrors([err.message || 'Failed to save quiz.']);
+      const extractedErrors = [];
+      if (err.data && typeof err.data === 'object') {
+        Object.entries(err.data).forEach(([field, msgs]) => {
+          const list = Array.isArray(msgs) ? msgs : [msgs];
+          list.forEach(m => {
+            extractedErrors.push(typeof m === 'string' ? `${field}: ${m}` : JSON.stringify(m));
+          });
+        });
+      }
+      if (extractedErrors.length === 0) {
+        extractedErrors.push(err.message || 'Failed to save quiz.');
+      }
+      setErrors(extractedErrors);
     } finally {
       setSaving(false);
     }

@@ -160,17 +160,17 @@ export const QuizHistoryView = ({ quizzes, onSelectQuiz, onEditQuiz }) => {
 
                       {/* Participants */}
                       <td style={{ padding: '16px 20px', color: '#0f172a', fontWeight: 600 }}>
-                        {isDraft ? '—' : q.completed_count || q.participants_count || 120}
+                        {isDraft ? '—' : q.completed_count ?? q.participants_count ?? 0}
                       </td>
 
                       {/* Avg. Score */}
                       <td style={{ padding: '16px 20px', color: '#065f46', fontWeight: 700 }}>
-                        {isDraft ? '—' : '82%'}
+                        {isDraft || q.average_score === null || q.average_score === undefined ? '—' : `${q.average_score}/4`}
                       </td>
 
                       {/* Winner */}
                       <td style={{ padding: '16px 20px', color: '#0f172a', fontWeight: 600 }}>
-                        {isDraft ? '—' : q.winner_name || 'Rahul S.'}
+                        {isDraft ? '—' : q.winner_name || '—'}
                       </td>
 
                       {/* Action */}

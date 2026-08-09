@@ -15,13 +15,31 @@ export const DailyQuizPage = ({ quiz, onSubmitted, onQuizExpired }) => {
   });
 
   const questionRefs = useRef({});
+  const answersRef = useRef(answers);
+  answersRef.current = answers;
+
+  const handleTimeOut = async () => {
+    const currentAnswers = answersRef.current;
+    if (participant && Object.keys(currentAnswers).length > 0) {
+      try {
+        const res = await api.submitQuizAttempt(quiz.id, participant.id, currentAnswers);
+        if (res.success && onSubmitted) {
+          onSubmitted(res);
+          return;
+        }
+      } catch (err) {
+        // proceed to expired screen
+      }
+    }
+    if (onQuizExpired) onQuizExpired();
+  };
 
   useEffect(() => {
     const timer = setInterval(() => {
       setSecondsRemaining((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          if (onQuizExpired) onQuizExpired();
+          handleTimeOut();
           return 0;
         }
         return prev - 1;
@@ -29,7 +47,7 @@ export const DailyQuizPage = ({ quiz, onSubmitted, onQuizExpired }) => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [onQuizExpired]);
+  }, [participant, quiz?.id]);
 
   const formatTimer = (secs) => {
     const m = Math.floor(secs / 60);

@@ -125,7 +125,9 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# MongoDB Atlas Configuration
+MONGO_URI = "mongodb+srv://hafeexhafe_db_user:iHvYbQHm8c7shaBp@cluster0.rthyrwy.mongodb.net/daily_quiz?retryWrites=true&w=majority&appName=Cluster0"
+MONGO_DB_NAME = "daily_quiz"
+

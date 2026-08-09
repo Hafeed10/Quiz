@@ -47,16 +47,16 @@ class Quiz(models.Model):
 
     title = models.CharField(max_length=255, default="Daily Reading Quiz")
     quiz_date = models.DateField(db_index=True)
-    start_time = models.TimeField(default=time(0, 0))
-    end_time = models.TimeField(default=time(23, 59, 59))
-    duration_minutes = models.PositiveIntegerField(default=5, help_text="Duration in minutes")
+    start_time = models.TimeField(default=time(10, 0))
+    end_time = models.TimeField(default=time(10, 20))
+    duration_minutes = models.PositiveIntegerField(default=20, help_text="Duration in minutes")
     
     passage_title = models.CharField(max_length=255, blank=True, default="Reading Passage")
     passage_content = models.TextField(help_text="The main paragraph/passage for the daily quiz")
     instructions = models.TextField(
         default="Read the following paragraph carefully before answering the questions. Answer all four questions within the time window."
     )
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='LIVE')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='SCHEDULED')
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -66,14 +66,15 @@ class Quiz(models.Model):
         verbose_name_plural = "Quizzes"
 
     def __str__(self):
-        return f"{self.title} - {self.quiz_date} ({self.status})"
+        return f"{self.title} - {self.quiz_date} ({self.dynamic_status})"
 
     def calculate_current_lifecycle(self):
         """
-        Dynamically determine if the quiz is upcoming, live, or ended based on current time
-        unless explicitly set to LIVE, ENDED, DRAFT or ARCHIVED by the administrator.
+        Determine if the quiz is upcoming, live, or ended.
+        Admin's explicitly set status (LIVE, ENDED, DRAFT, ARCHIVED) takes full precedence.
+        If status is SCHEDULED, it checks the admin's start_time and end_time window.
         """
-        if self.status in ['DRAFT', 'ARCHIVED', 'LIVE', 'ENDED']:
+        if self.status in ['LIVE', 'ENDED', 'DRAFT', 'ARCHIVED']:
             return self.status
 
         today = timezone.localdate()

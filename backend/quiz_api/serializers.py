@@ -1,7 +1,37 @@
 import re
+from datetime import datetime, date, time
 from rest_framework import serializers
 from django.utils import timezone
 from .models import Participant, Quiz, Question, QuestionOption, Attempt, Answer, normalize_phone
+from .mongo_service import sync_quiz_to_mongo
+
+class FlexibleTimeField(serializers.TimeField):
+    def to_internal_value(self, value):
+        if isinstance(value, time):
+            return value
+        if not value:
+            return time(10, 0)
+        val = str(value).strip()
+        for fmt in ('%I:%M %p', '%I:%M%p', '%I:%M:%S %p', '%H:%M:%S', '%H:%M'):
+            try:
+                return datetime.strptime(val, fmt).time()
+            except ValueError:
+                pass
+        return super().to_internal_value(value)
+
+class FlexibleDateField(serializers.DateField):
+    def to_internal_value(self, value):
+        if isinstance(value, date):
+            return value
+        if not value:
+            return timezone.localdate()
+        val = str(value).strip()
+        for fmt in ('%Y-%m-%d', '%m/%d/%Y', '%d/%m/%Y', '%Y/%m/%d', '%b %d, %Y', '%B %d, %Y'):
+            try:
+                return datetime.strptime(val, fmt).date()
+            except ValueError:
+                pass
+        return super().to_internal_value(value)
 
 class ParticipantSerializer(serializers.ModelSerializer):
     phone_number = serializers.CharField()
@@ -176,10 +206,14 @@ class AdminQuestionSerializer(serializers.ModelSerializer):
 
 
 class AdminQuizSerializer(serializers.ModelSerializer):
+    quiz_date = FlexibleDateField(required=False)
+    start_time = FlexibleTimeField(required=False)
+    end_time = FlexibleTimeField(required=False)
     questions = AdminQuestionSerializer(many=True, required=False)
     dynamic_status = serializers.CharField(read_only=True)
     participants_count = serializers.SerializerMethodField()
     completed_count = serializers.SerializerMethodField()
+    average_score = serializers.SerializerMethodField()
     winner_name = serializers.SerializerMethodField()
 
     class Meta:
@@ -188,7 +222,7 @@ class AdminQuizSerializer(serializers.ModelSerializer):
             'id', 'title', 'quiz_date', 'start_time', 'end_time',
             'duration_minutes', 'passage_title', 'passage_content',
             'instructions', 'status', 'dynamic_status', 'questions',
-            'participants_count', 'completed_count', 'winner_name',
+            'participants_count', 'completed_count', 'average_score', 'winner_name',
             'created_at', 'updated_at'
         ]
 
@@ -197,6 +231,13 @@ class AdminQuizSerializer(serializers.ModelSerializer):
 
     def get_completed_count(self, obj):
         return obj.attempts.filter(status='COMPLETED').count()
+
+    def get_average_score(self, obj):
+        completed = obj.attempts.filter(status='COMPLETED')
+        if not completed.exists():
+            return None
+        avg = completed.aggregate(avg=Avg('score'))['avg']
+        return round(avg, 1) if avg is not None else None
 
     def get_winner_name(self, obj):
         winner_attempt = obj.attempts.filter(status='COMPLETED').order_by('-score', 'submitted_at').first()
@@ -232,14 +273,17 @@ class AdminQuizSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        questions_data = self.initial_data.get('questions', [])
+        questions_data = validated_data.pop('questions', None)
+        if questions_data is None:
+            questions_data = self.initial_data.get('questions', [])
+
         quiz = Quiz.objects.create(**validated_data)
 
-        for q_data in questions_data:
+        for idx, q_data in enumerate(questions_data):
             options_data = q_data.get('options', [])
             question = Question.objects.create(
                 quiz=quiz,
-                question_number=q_data.get('question_number', 1),
+                question_number=q_data.get('question_number', idx + 1),
                 question_text=q_data.get('question_text', '')
             )
             for opt_data in options_data:
@@ -249,10 +293,13 @@ class AdminQuizSerializer(serializers.ModelSerializer):
                     option_text=opt_data.get('option_text', ''),
                     is_correct=opt_data.get('is_correct', False)
                 )
+        sync_quiz_to_mongo(quiz)
         return quiz
 
     def update(self, instance, validated_data):
-        questions_data = self.initial_data.get('questions', None)
+        questions_data = validated_data.pop('questions', None)
+        if questions_data is None:
+            questions_data = self.initial_data.get('questions', None)
         
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
@@ -261,11 +308,11 @@ class AdminQuizSerializer(serializers.ModelSerializer):
         if questions_data is not None:
             # Overwrite questions and options cleanly
             instance.questions.all().delete()
-            for q_data in questions_data:
+            for idx, q_data in enumerate(questions_data):
                 options_data = q_data.get('options', [])
                 question = Question.objects.create(
                     quiz=instance,
-                    question_number=q_data.get('question_number', 1),
+                    question_number=q_data.get('question_number', idx + 1),
                     question_text=q_data.get('question_text', '')
                 )
                 for opt_data in options_data:
@@ -275,7 +322,7 @@ class AdminQuizSerializer(serializers.ModelSerializer):
                         option_text=opt_data.get('option_text', ''),
                         is_correct=opt_data.get('is_correct', False)
                     )
-
+        sync_quiz_to_mongo(instance)
         return instance
 
 

@@ -162,11 +162,16 @@ export const LandingPage = ({ quizData, onStartQuiz, openLoginModal }) => {
                   border: '1px solid #cbd5e1',
                   color: '#065f46',
                   fontWeight: 700,
-                  fontSize: '12px',
-                  padding: '6px 14px',
+                  fontSize: '13px',
+                  padding: '8px 16px',
                   borderRadius: '6px',
                   cursor: 'pointer',
                   transition: 'all 0.15s ease',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
               >
                 Sign In
@@ -273,26 +278,39 @@ export const LandingPage = ({ quizData, onStartQuiz, openLoginModal }) => {
             ) : isScheduled ? (
               <div style={{
                 textAlign: 'center',
-                padding: '14px',
+                padding: '18px',
                 background: '#eff6ff',
-                borderRadius: '8px',
-                border: '1px solid #bfdbfe',
+                borderRadius: '10px',
+                border: '1.5px solid #bfdbfe',
               }}>
-                <span style={{ fontSize: '12px', color: '#1d4ed8', display: 'block', fontWeight: 600 }}>
-                  Assessment Starts at:
+                <span style={{ fontSize: '11px', color: '#1d4ed8', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '4px' }}>
+                  Scheduled Assessment Window
                 </span>
                 <strong style={{ fontSize: '18px', color: '#1e40af', fontFamily: 'var(--font-mono)' }}>
-                  {quizData?.start_time || '10:00 AM'}
+                  {quizData?.start_time ? `${quizData.start_time} – ${quizData.end_time}` : '10:00 – 10:05'} ({quizData?.duration_minutes || 20} Mins)
                 </strong>
+                <span style={{ fontSize: '12px', color: '#475569', display: 'block', marginTop: '6px' }}>
+                  Quiz & login opens at {quizData?.start_time || '10:00 AM'}.
+                </span>
               </div>
             ) : (
-              <button
-                onClick={onStartQuiz}
-                className="btn-secondary"
-                style={{ width: '100%', padding: '12px', justifyContent: 'center' }}
-              >
-                Quiz Closed — View Status
-              </button>
+              <div style={{
+                textAlign: 'center',
+                padding: '18px',
+                background: '#f8fafc',
+                borderRadius: '10px',
+                border: '1.5px solid #e2e8f0',
+              }}>
+                <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '4px' }}>
+                  Assessment Closed
+                </span>
+                <strong style={{ fontSize: '16px', color: '#0f172a' }}>
+                  {quizData?.end_time ? `Today's Quiz Ended at ${quizData.end_time}` : "Today's Assessment Window is Closed"}
+                </strong>
+                <span style={{ fontSize: '12px', color: '#64748b', display: 'block', marginTop: '4px' }}>
+                  Next quiz session will open as scheduled by the administrator.
+                </span>
+              </div>
             )}
 
             {/* Micro Rules Footer */}

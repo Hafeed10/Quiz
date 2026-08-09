@@ -11,13 +11,14 @@ from .serializers import (
     ParticipantSerializer, QuizPublicSerializer, AttemptSubmitSerializer,
     AdminQuizSerializer, AdminAttemptSerializer, QuestionOptionPublicSerializer
 )
+from .mongo_service import sync_participant_to_mongo, sync_quiz_to_mongo, sync_attempt_to_mongo
 
 def get_next_quiz_info():
     today = timezone.localdate()
     next_quiz = Quiz.objects.filter(quiz_date__gt=today).exclude(status='DRAFT').order_by('quiz_date', 'start_time').first()
     if next_quiz:
         start_str = next_quiz.start_time.strftime('%I:%M %p') if next_quiz.start_time else "10:00 AM"
-        end_str = next_quiz.end_time.strftime('%I:%M %p') if next_quiz.end_time else "04:00 PM"
+        end_str = next_quiz.end_time.strftime('%I:%M %p') if next_quiz.end_time else "10:20 AM"
         return {
             "quiz_id": next_quiz.id,
             "title": next_quiz.title,
@@ -25,6 +26,7 @@ def get_next_quiz_info():
             "date_formatted": next_quiz.quiz_date.strftime('%b %d, %Y'),
             "time": start_str,
             "end_time": end_str,
+            "duration_minutes": next_quiz.duration_minutes or 20,
             "window_text": f"{start_str} to {end_str}",
         }
     tomorrow = today + timedelta(days=1)
@@ -34,8 +36,9 @@ def get_next_quiz_info():
         "date": tomorrow.strftime('%Y-%m-%d'),
         "date_formatted": tomorrow.strftime('%b %d, %Y'),
         "time": "10:00 AM",
-        "end_time": "04:00 PM",
-        "window_text": "10:00 AM to 4:00 PM",
+        "end_time": "10:20 AM",
+        "duration_minutes": 20,
+        "window_text": "10:00 AM to 10:20 AM",
     }
 
 # ==========================================
@@ -175,6 +178,8 @@ def login_or_register_participant(request):
         participant.name = name
         participant.save(update_fields=['name', 'updated_at'])
 
+    sync_participant_to_mongo(participant)
+
     today = timezone.localdate()
     today_quiz = Quiz.objects.filter(status='LIVE').first() or Quiz.objects.filter(quiz_date=today).exclude(status='DRAFT').first()
     
@@ -265,6 +270,7 @@ def submit_quiz_attempt(request, quiz_id):
     serializer = AttemptSubmitSerializer(data=request.data, context={'quiz': quiz})
     if serializer.is_valid():
         attempt = serializer.save()
+        sync_attempt_to_mongo(attempt)
         return Response({
             "success": True,
             "attempt_id": attempt.id,

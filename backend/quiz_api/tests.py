@@ -46,20 +46,77 @@ class QuizCoreTests(TestCase):
         self.assertEqual(response.data['name'], "Rahul Sharma")
         self.assertIn('history', response.data)
 
-    def test_get_participant_history_endpoint(self):
-        # Create an attempt for Rahul
+    def test_admin_dashboard_metrics(self):
+        # Create an attempt
         Attempt.objects.create(
             quiz=self.quiz,
             participant=self.participant,
             score=4,
             status='COMPLETED'
         )
-        response = self.client.get(f'/api/participant/history/?phone=9876543210')
+        response = self.client.get('/api/admin/stats/')
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.data['exists'])
-        self.assertEqual(response.data['total_attempts'], 1)
-        self.assertEqual(len(response.data['attempts']), 1)
-        self.assertEqual(response.data['attempts'][0]['status'], 'COMPLETED')
+        self.assertEqual(response.data['total_participants'], 1)
+        self.assertEqual(response.data['total_quizzes'], 1)
+
+    def test_create_admin_quiz_with_nested_questions(self):
+        payload = {
+            "title": "The Importance of Trees",
+            "quiz_date": "2026-08-09",
+            "start_time": "10:00 AM",
+            "end_time": "06:07 PM",
+            "duration_minutes": 20,
+            "passage_title": "The Importance of Trees",
+            "passage_content": "Trees provide oxygen and prevent soil erosion.",
+            "instructions": "Answer all 4 questions.",
+            "status": "LIVE",
+            "questions": [
+                {
+                    "question_number": 1,
+                    "question_text": "What do trees provide?",
+                    "options": [
+                        {"option_key": "A", "option_text": "Water", "is_correct": False},
+                        {"option_key": "B", "option_text": "Oxygen", "is_correct": True},
+                        {"option_key": "C", "option_text": "Wood", "is_correct": False},
+                        {"option_key": "D", "option_text": "Soil", "is_correct": False}
+                    ]
+                },
+                {
+                    "question_number": 2,
+                    "question_text": "How do trees help prevent erosion?",
+                    "options": [
+                        {"option_key": "A", "option_text": "Leaves", "is_correct": False},
+                        {"option_key": "B", "option_text": "Roots hold soil", "is_correct": True},
+                        {"option_key": "C", "option_text": "Branches", "is_correct": False},
+                        {"option_key": "D", "option_text": "Bark", "is_correct": False}
+                    ]
+                },
+                {
+                    "question_number": 3,
+                    "question_text": "What do people get from trees?",
+                    "options": [
+                        {"option_key": "A", "option_text": "Plastic", "is_correct": False},
+                        {"option_key": "B", "option_text": "Wood and medicines", "is_correct": True},
+                        {"option_key": "C", "option_text": "Glass", "is_correct": False},
+                        {"option_key": "D", "option_text": "Petroleum", "is_correct": False}
+                    ]
+                },
+                {
+                    "question_number": 4,
+                    "question_text": "Which natural food do trees produce?",
+                    "options": [
+                        {"option_key": "A", "option_text": "Plastic", "is_correct": False},
+                        {"option_key": "B", "option_text": "Metal", "is_correct": False},
+                        {"option_key": "C", "option_text": "Fruits", "is_correct": True},
+                        {"option_key": "D", "option_text": "Glass", "is_correct": False}
+                    ]
+                }
+            ]
+        }
+        response = self.client.post('/api/admin/quizzes/', payload, format='json')
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data['title'], "The Importance of Trees")
+        self.assertEqual(Question.objects.filter(quiz_id=response.data['id']).count(), 4)
 
     def test_participant_login_and_auto_fill(self):
         response = self.client.post('/api/auth/participant/', {

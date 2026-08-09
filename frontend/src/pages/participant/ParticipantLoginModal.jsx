@@ -408,7 +408,7 @@ export const ParticipantLoginModal = ({ isOpen, onClose, onLoginSuccess }) => {
                     Next Assessment Schedule
                   </span>
                   <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a' }}>
-                    {nextQuiz?.date_formatted || 'Tomorrow'} ({nextQuiz?.window_text || '10:00 AM to 4:00 PM'})
+                    {nextQuiz?.date_formatted || 'Tomorrow'} ({nextQuiz?.window_text || '10:00 AM – 10:20 AM'})
                   </div>
                 </div>
               </div>
@@ -424,7 +424,7 @@ export const ParticipantLoginModal = ({ isOpen, onClose, onLoginSuccess }) => {
                   border: '1px solid #bfdbfe',
                   display: 'inline-block',
                 }}>
-                  10:00 AM – 4:00 PM
+                  {nextQuiz?.duration_minutes || 20} Mins Window
                 </span>
               </div>
             </div>
