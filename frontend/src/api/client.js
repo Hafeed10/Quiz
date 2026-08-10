@@ -32,9 +32,9 @@ export const api = {
     const param = isId ? `participant_id=${phoneOrId}` : `phone=${encodeURIComponent(phoneOrId)}`;
     return request(`/participant/history/?${param}`);
   },
-  authParticipant: (name, phone_number) => request('/auth/participant/', {
+  authParticipant: (name, phone_number, photo = '') => request('/auth/participant/', {
     method: 'POST',
-    body: JSON.stringify({ name, phone_number }),
+    body: JSON.stringify({ name, phone_number, photo }),
   }),
   getTodayQuiz: (participantId) => request(`/quiz/today/${participantId ? `?participant_id=${participantId}` : ''}`),
   submitQuizAttempt: (quizId, participantId, answers) => request(`/quiz/${quizId}/submit/`, {

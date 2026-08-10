@@ -36,11 +36,12 @@ class FlexibleDateField(serializers.DateField):
 
 class ParticipantSerializer(serializers.ModelSerializer):
     phone_number = serializers.CharField()
+    photo = serializers.CharField(required=False, allow_blank=True, default='')
     masked_phone = serializers.CharField(read_only=True)
 
     class Meta:
         model = Participant
-        fields = ['id', 'name', 'phone_number', 'masked_phone', 'created_at']
+        fields = ['id', 'name', 'phone_number', 'photo', 'masked_phone', 'created_at']
 
     def validate_phone_number(self, value):
         cleaned = normalize_phone(value)
@@ -352,6 +353,7 @@ class AdminAttemptSerializer(serializers.ModelSerializer):
     participant_name = serializers.CharField(source='participant.name')
     phone_number = serializers.CharField(source='participant.phone_number')
     masked_phone = serializers.CharField(source='participant.masked_phone')
+    photo = serializers.CharField(source='participant.photo', read_only=True, default='')
     quiz_title = serializers.CharField(source='quiz.title', read_only=True)
     quiz_date = serializers.CharField(source='quiz.quiz_date', read_only=True)
     answers = AdminAnswerReviewSerializer(many=True, read_only=True)
@@ -361,7 +363,7 @@ class AdminAttemptSerializer(serializers.ModelSerializer):
         model = Attempt
         fields = [
             'id', 'quiz_id', 'quiz_title', 'quiz_date', 'participant_name',
-            'phone_number', 'masked_phone', 'status', 'score', 'started_at',
+            'phone_number', 'masked_phone', 'photo', 'status', 'score', 'started_at',
             'submitted_at', 'submission_time_formatted', 'answers'
         ]
 
@@ -388,7 +390,8 @@ class AdminWinnerSerializer(serializers.Serializer):
             'id': p.id,
             'name': p.name,
             'masked_phone': p.masked_phone,
-            'phone_number': p.phone_number
+            'phone_number': p.phone_number,
+            'photo': getattr(p, 'photo', '') or ''
         }
 
     def get_top_candidates(self, obj):
@@ -398,6 +401,7 @@ class AdminWinnerSerializer(serializers.Serializer):
                 'rank': idx + 1,
                 'name': att.participant.name,
                 'masked_phone': att.participant.masked_phone,
+                'photo': getattr(att.participant, 'photo', '') or '',
                 'score': att.score,
                 'submitted_at': timezone.localtime(att.submitted_at).strftime('%H:%M:%S') if att.submitted_at else '—'
             }

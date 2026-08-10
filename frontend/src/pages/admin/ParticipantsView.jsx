@@ -183,8 +183,13 @@ export const ParticipantsView = ({ quizId }) => {
                           justifyContent: 'center',
                           fontSize: '12px',
                           fontWeight: 800,
+                          overflow: 'hidden',
                         }}>
-                          {att.participant_name ? att.participant_name.charAt(0).toUpperCase() : 'P'}
+                          {att.photo ? (
+                            <img src={att.photo} alt={att.participant_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          ) : (
+                            att.participant_name ? att.participant_name.charAt(0).toUpperCase() : 'P'
+                          )}
                         </div>
                         <span>{att.participant_name}</span>
                       </div>

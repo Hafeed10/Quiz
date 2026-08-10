@@ -194,7 +194,7 @@ export const AdminLogin = ({ onLoginSuccess }) => {
           color: '#64748b',
         }}>
           <Lock size={13} color="#065f46" />
-          <span>Role-Based Access Control • Daily Quiz Platform</span>
+          <span>Role-Based Access Control • Quiz Bazar Platform</span>
         </div>
       </div>
     </div>

@@ -59,19 +59,25 @@ export const WinnerView = ({ quizId }) => {
         position: 'relative',
         background: '#ffffff',
       }}>
-        {/* Glowing circular trophy badge */}
+        {/* Glowing circular photo / trophy badge */}
         <div style={{
-          width: '72px',
-          height: '72px',
+          width: '80px',
+          height: '80px',
           borderRadius: '50%',
           background: '#ecfdf5',
-          border: '2px solid #a7f3d0',
+          border: '3px solid #059669',
           margin: '0 auto 16px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          overflow: 'hidden',
+          boxShadow: '0 4px 16px rgba(6, 95, 70, 0.2)',
         }}>
-          <Trophy size={40} color="#065f46" />
+          {winner.photo ? (
+            <img src={winner.photo} alt={winner.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          ) : (
+            <Trophy size={40} color="#065f46" />
+          )}
         </div>
 
         <div style={{

@@ -54,7 +54,7 @@ export const Header = ({ currentView, setCurrentView, openLoginModal, isQuizOpen
             }}>
               <BookOpen size={19} />
             </div>
-            <span>Daily<span style={{ color: '#059669' }}>Quiz</span></span>
+            <span>Quiz <span style={{ color: '#059669' }}>Bazar</span></span>
           </div>
 
           {/* Navigation Links — Desktop */}
@@ -157,10 +157,15 @@ export const Header = ({ currentView, setCurrentView, openLoginModal, isQuizOpen
                   fontSize: '13px',
                   border: 'none',
                   cursor: 'pointer',
+                  overflow: 'hidden',
                   boxShadow: '0 2px 6px rgba(6, 95, 70, 0.25)',
                 }}
               >
-                {userInitial}
+                {participant?.photo ? (
+                  <img src={participant.photo} alt={participant.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  userInitial
+                )}
               </button>
             )}
           </div>
@@ -201,8 +206,8 @@ export const Header = ({ currentView, setCurrentView, openLoginModal, isQuizOpen
                 border: '1px solid #e2e8f0',
               }}>
                 <div style={{
-                  width: '26px',
-                  height: '26px',
+                  width: '28px',
+                  height: '28px',
                   borderRadius: '50%',
                   background: '#065f46',
                   color: '#ffffff',
@@ -211,8 +216,13 @@ export const Header = ({ currentView, setCurrentView, openLoginModal, isQuizOpen
                   justifyContent: 'center',
                   fontWeight: 700,
                   fontSize: '11px',
+                  overflow: 'hidden',
                 }}>
-                  {userInitial}
+                  {participant.photo ? (
+                    <img src={participant.photo} alt={participant.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    userInitial
+                  )}
                 </div>
                 <div style={{ textAlign: 'left' }}>
                   <div style={{ fontSize: '12px', fontWeight: 700, color: '#0f172a' }}>

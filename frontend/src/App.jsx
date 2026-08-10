@@ -3,6 +3,7 @@ import { useAuth } from './context/AuthContext';
 import { api } from './api/client';
 import { Header } from './components/Header';
 import { QRCodePortalPage } from './pages/participant/QRCodePortalPage';
+import { ParticipantFlowWizard } from './pages/participant/ParticipantFlowWizard';
 import { LandingPage } from './pages/participant/LandingPage';
 import { DailyQuizPage } from './pages/participant/DailyQuizPage';
 import { ParticipantLoginModal } from './pages/participant/ParticipantLoginModal';
@@ -142,13 +143,9 @@ export function App() {
           /* Participant Portal Views */
           <div>
             {participantSubView === 'landing' && (
-              <LandingPage
+              <ParticipantFlowWizard
                 quizData={quizData}
                 onStartQuiz={handleStartQuiz}
-                openLoginModal={() => {
-                  setLoginModalOpen(true);
-                  window.location.hash = '#login';
-                }}
               />
             )}
 

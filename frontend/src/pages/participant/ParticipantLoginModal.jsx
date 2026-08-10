@@ -11,6 +11,7 @@ export const ParticipantLoginModal = ({ isOpen, onClose, onLoginSuccess }) => {
   const { participant, loginParticipant, logoutParticipant } = useAuth();
   const [phoneNumber, setPhoneNumber] = useState('');
   const [name, setName] = useState('');
+  const [photo, setPhoto] = useState('');
   const [isRecognized, setIsRecognized] = useState(false);
   const [lookupLoading, setLookupLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -42,6 +43,7 @@ export const ParticipantLoginModal = ({ isOpen, onClose, onLoginSuccess }) => {
       if (participant) {
         setPhoneNumber(participant.phone_number || '');
         setName(participant.name || '');
+        setPhoto(participant.photo || '');
         setIsRecognized(true);
         fetchHistory(participant.id);
       } else {
@@ -69,6 +71,7 @@ export const ParticipantLoginModal = ({ isOpen, onClose, onLoginSuccess }) => {
         const res = await api.lookupParticipant(digits);
         if (res.exists && res.name) {
           setName(res.name);
+          if (res.photo) setPhoto(res.photo);
           setIsRecognized(true);
           setQuizHistory(res.history || []);
           if (res.next_quiz) setNextQuiz(res.next_quiz);
@@ -104,7 +107,7 @@ export const ParticipantLoginModal = ({ isOpen, onClose, onLoginSuccess }) => {
 
     setSubmitting(true);
     try {
-      const res = await loginParticipant(name.trim(), cleanPhone);
+      const res = await loginParticipant(name.trim(), cleanPhone, photo);
       if (res.success) {
         if (onLoginSuccess) {
           onLoginSuccess(res);

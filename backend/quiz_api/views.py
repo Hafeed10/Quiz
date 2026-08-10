@@ -87,6 +87,7 @@ def lookup_participant(request):
             "name": participant.name,
             "masked_phone": participant.masked_phone,
             "phone_number": participant.phone_number,
+            "photo": participant.photo or "",
             "total_attempts": attempts.count(),
             "next_quiz": next_quiz,
             "history": attempts_data
@@ -145,7 +146,8 @@ def get_participant_history(request):
             "id": participant.id,
             "name": participant.name,
             "phone_number": participant.phone_number,
-            "masked_phone": participant.masked_phone
+            "masked_phone": participant.masked_phone,
+            "photo": participant.photo or ""
         },
         "total_attempts": attempts.count(),
         "completed_count": attempts.filter(status='COMPLETED').count(),
@@ -158,8 +160,8 @@ def get_participant_history(request):
 @api_view(['POST'])
 def login_or_register_participant(request):
     """
-    Participant login / registration using Name + Phone Number.
-    POST /api/auth/participant/ { "name": "Rahul Sharma", "phone_number": "9876543210" }
+    Participant login / registration using Name + Phone Number + Optional Photo.
+    POST /api/auth/participant/ { "name": "Rahul Sharma", "phone_number": "9876543210", "photo": "..." }
     """
     serializer = ParticipantSerializer(data=request.data)
     if not serializer.is_valid():
@@ -168,6 +170,7 @@ def login_or_register_participant(request):
     name = serializer.validated_data['name'].strip()
     raw_phone = serializer.validated_data['phone_number']
     phone = normalize_phone(raw_phone)
+    photo = serializer.validated_data.get('photo', '').strip()
 
     # Lookup existing participant by phone or case-insensitive name
     participant = Participant.objects.filter(phone_number=phone).first()
@@ -176,7 +179,7 @@ def login_or_register_participant(request):
 
     is_new = False
     if not participant:
-        participant = Participant.objects.create(name=name, phone_number=phone)
+        participant = Participant.objects.create(name=name, phone_number=phone, photo=photo)
         is_new = True
     else:
         updated = False
@@ -185,6 +188,9 @@ def login_or_register_participant(request):
             updated = True
         if phone and participant.phone_number != phone:
             participant.phone_number = phone
+            updated = True
+        if photo and participant.photo != photo:
+            participant.photo = photo
             updated = True
         if updated:
             participant.save()
@@ -209,7 +215,8 @@ def login_or_register_participant(request):
             "id": participant.id,
             "name": participant.name,
             "phone_number": participant.phone_number,
-            "masked_phone": participant.masked_phone
+            "masked_phone": participant.masked_phone,
+            "photo": participant.photo or ""
         },
         "today_quiz_id": today_quiz.id if today_quiz else None,
         "has_completed_today": has_completed_today,
@@ -482,6 +489,7 @@ def admin_cumulative_participants(request):
             "name": primary.name,
             "phone_number": primary.phone_number,
             "masked_phone": primary.masked_phone,
+            "photo": primary.photo or "",
             "total_quizzes_taken": total_quizzes,
             "total_score": total_score,
             "max_possible_score": max_possible,

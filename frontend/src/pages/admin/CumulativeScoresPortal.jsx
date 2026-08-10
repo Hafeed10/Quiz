@@ -343,8 +343,13 @@ export const CumulativeScoresPortal = () => {
                           alignItems: 'center',
                           justifyContent: 'center',
                           boxShadow: '0 2px 6px rgba(6, 95, 70, 0.2)',
+                          overflow: 'hidden',
                         }}>
-                          {p.name.charAt(0).toUpperCase()}
+                          {p.photo ? (
+                            <img src={p.photo} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          ) : (
+                            p.name.charAt(0).toUpperCase()
+                          )}
                         </div>
                         <div>
                           <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '15px' }}>

@@ -15,6 +15,7 @@ def normalize_phone(phone_str: str) -> str:
 class Participant(models.Model):
     name = models.CharField(max_length=150)
     phone_number = models.CharField(max_length=20, unique=True, db_index=True)
+    photo = models.TextField(blank=True, default='')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

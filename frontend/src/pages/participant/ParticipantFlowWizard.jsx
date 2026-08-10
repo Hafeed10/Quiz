@@ -1,0 +1,1069 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { useAuth } from '../../context/AuthContext';
+import { api } from '../../api/client';
+import {
+  BookOpen,
+  Sparkles,
+  ArrowRight,
+  ArrowLeft,
+  Camera,
+  Upload,
+  User,
+  Phone,
+  CheckCircle,
+  Clock,
+  Shield,
+  Award,
+  AlertCircle,
+  HelpCircle,
+  Play,
+  RotateCcw,
+  Check,
+  Zap,
+  Info
+} from 'lucide-react';
+
+const AVATAR_PRESETS = [
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Felix',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Aneka',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Zack',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Precious',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Milo',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Bella',
+];
+
+export const ParticipantFlowWizard = ({
+  quizData,
+  onStartQuiz,
+  initialStep = 1,
+}) => {
+  const { participant, loginParticipant } = useAuth();
+
+  // step: 1 = Welcome/Logo/Quiz Name, 2 = Participant Form (Phone, Photo, Name), 3 = Rules Page
+  const [step, setStep] = useState(initialStep);
+
+  // Form State
+  const [name, setName] = useState(participant?.name || '');
+  const [phone, setPhone] = useState(participant?.phone_number || '');
+  const [photo, setPhoto] = useState(participant?.photo || '');
+  const [agreeRules, setAgreeRules] = useState(true);
+
+  // UI state
+  const [loading, setLoading] = useState(false);
+  const [lookupLoading, setLookupLoading] = useState(false);
+  const [lookupMessage, setLookupMessage] = useState(null);
+  const [error, setError] = useState('');
+  const fileInputRef = useRef(null);
+
+  // Sync state if participant context updates
+  useEffect(() => {
+    if (participant) {
+      setName(participant.name || '');
+      setPhone(participant.phone_number || '');
+      setPhoto(participant.photo || '');
+    }
+  }, [participant]);
+
+  // Image compression & conversion to lightweight base64 Data URL
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please select a valid image file (JPG or PNG).');
+      return;
+    }
+
+    setError('');
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_SIZE = 220;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_SIZE) {
+            height *= MAX_SIZE / width;
+            width = MAX_SIZE;
+          }
+        } else {
+          if (height > MAX_SIZE) {
+            width *= MAX_SIZE / height;
+            height = MAX_SIZE;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+        setPhoto(dataUrl);
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Phone lookup on blur or 10 digits entered
+  const handlePhoneBlur = async () => {
+    const cleanPhone = phone.replace(/\D/g, '');
+    if (cleanPhone.length >= 10 && !name) {
+      setLookupLoading(true);
+      setLookupMessage(null);
+      try {
+        const res = await api.lookupParticipant(cleanPhone);
+        if (res.exists) {
+          setName(res.name);
+          if (res.photo) setPhoto(res.photo);
+          setLookupMessage(`Found account: ${res.name}`);
+        }
+      } catch {
+        // Ignore lookup error
+      } finally {
+        setLookupLoading(false);
+      }
+    }
+  };
+
+  // Handle Proceed from Step 1 (Welcome) -> Step 2 (Form)
+  const handleWelcomeNext = () => {
+    setError('');
+    setStep(2);
+  };
+
+  // Handle Submit on Step 2 (Participation Details Form) -> Step 3 (Rules)
+  const handleDetailsSubmit = async (e) => {
+    if (e) e.preventDefault();
+    setError('');
+
+    const cleanName = name.trim();
+    const cleanPhone = phone.replace(/\D/g, '');
+
+    if (!cleanPhone || cleanPhone.length < 7 || cleanPhone.length > 15) {
+      setError('Please enter a valid 10-digit mobile number.');
+      return;
+    }
+
+    if (!cleanName || cleanName.length < 2) {
+      setError('Please enter your full name (minimum 2 characters).');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await loginParticipant(cleanName, cleanPhone, photo);
+      if (res.success) {
+        if (res.has_completed_today) {
+          setError('You have already completed today’s daily quiz session.');
+          return;
+        }
+        setStep(3); // Proceed to Rules Screen
+      } else {
+        setError(res.message || 'Unable to register participant. Please try again.');
+      }
+    } catch (err) {
+      setError(err.message || 'Network error. Please check your connection.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle Start Competition on Step 3 (Rules) -> Start Quiz
+  const handleStartCompetition = () => {
+    if (!agreeRules) {
+      setError('Please confirm that you have read and understood the rules.');
+      return;
+    }
+    onStartQuiz();
+  };
+
+  return (
+    <div className="app-container animate-fade-in" style={{ maxWidth: '780px', padding: '24px 16px 100px', margin: '0 auto' }}>
+      {/* Visual Step Indicator Banner */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '8px',
+        marginBottom: '28px',
+      }}>
+        {[
+          { num: 1, label: 'Welcome' },
+          { num: 2, label: 'Enter Details' },
+          { num: 3, label: 'Rules' },
+        ].map((item, idx) => (
+          <React.Fragment key={item.num}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 14px',
+              borderRadius: '999px',
+              background: step === item.num ? '#ecfdf5' : '#ffffff',
+              border: step === item.num ? '1.5px solid #059669' : '1px solid #e2e8f0',
+              color: step === item.num ? '#065f46' : step > item.num ? '#059669' : '#94a3b8',
+              fontWeight: step === item.num ? 800 : 600,
+              fontSize: '12px',
+              transition: 'all 0.2s ease',
+            }}>
+              <span style={{
+                width: '20px',
+                height: '20px',
+                borderRadius: '50%',
+                background: step === item.num ? '#059669' : step > item.num ? '#10b981' : '#e2e8f0',
+                color: '#ffffff',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '11px',
+                fontWeight: 800,
+              }}>
+                {step > item.num ? <Check size={12} strokeWidth={3} /> : item.num}
+              </span>
+              <span>{item.label}</span>
+            </div>
+            {idx < 2 && (
+              <div style={{
+                width: '24px',
+                height: '2px',
+                background: step > item.num ? '#10b981' : '#e2e8f0',
+              }} />
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+
+      {/* ========================================================================= */}
+      {/* STEP 1: WELCOME SCREEN (Logo, Quiz Name, Overview, Next Button) */}
+      {/* ========================================================================= */}
+      {step === 1 && (
+        <div className="glass-card animate-fade-in" style={{
+          background: '#ffffff',
+          borderRadius: '24px',
+          border: '1.5px solid #e2e8f0',
+          padding: '36px 28px',
+          textAlign: 'center',
+          boxShadow: '0 12px 36px rgba(6, 95, 70, 0.08)',
+        }}>
+          {/* Logo & Brand Header */}
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '12px',
+            background: '#f8fafc',
+            padding: '8px 20px',
+            borderRadius: '999px',
+            border: '1px solid #e2e8f0',
+            marginBottom: '24px',
+          }}>
+            <div style={{
+              width: '38px',
+              height: '38px',
+              borderRadius: '10px',
+              background: '#065f46',
+              color: '#ffffff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 3px 10px rgba(6, 95, 70, 0.3)',
+            }}>
+              <BookOpen size={22} />
+            </div>
+            <span style={{ fontSize: '22px', fontWeight: 900, color: '#0f172a', letterSpacing: '-0.02em' }}>
+              Quiz <span style={{ color: '#059669' }}>Bazar</span>
+            </span>
+          </div>
+
+          {/* Live Status Badge */}
+          <div style={{ marginBottom: '16px' }}>
+            <span style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: '#ecfdf5',
+              border: '1px solid #a7f3d0',
+              color: '#065f46',
+              fontSize: '12px',
+              fontWeight: 800,
+              padding: '5px 14px',
+              borderRadius: '999px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+            }}>
+              <span style={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                background: '#059669',
+                boxShadow: '0 0 8px #059669',
+              }} />
+              {quizData?.dynamic_status === 'LIVE' ? 'Competition Active' : 'Daily Reading Assessment'}
+            </span>
+          </div>
+
+          {/* Quiz Name / Title */}
+          <h1 style={{
+            fontSize: '32px',
+            fontWeight: 900,
+            color: '#0f172a',
+            lineHeight: 1.25,
+            letterSpacing: '-0.02em',
+            marginBottom: '12px',
+          }}>
+            {quizData?.title || "Daily Reading & Comprehension Quiz"}
+          </h1>
+
+          {/* Passage Topic info */}
+          {quizData?.passage_title && (
+            <div style={{
+              fontSize: '15px',
+              color: '#065f46',
+              fontWeight: 700,
+              background: '#f0fdf4',
+              display: 'inline-block',
+              padding: '4px 14px',
+              borderRadius: '8px',
+              marginBottom: '20px',
+              border: '1px solid #bbf7d0',
+            }}>
+              📖 Topic: {quizData.passage_title}
+            </div>
+          )}
+
+          <p style={{
+            fontSize: '15px',
+            color: '#475569',
+            lineHeight: 1.6,
+            maxWidth: '560px',
+            margin: '0 auto 28px',
+          }}>
+            Welcome to today’s reading comprehension competition! Read the passage carefully, answer 4 timed questions, and compete for top honors on the leaderboard.
+          </p>
+
+          {/* 4 Pillars Summary Grid */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+            gap: '14px',
+            marginBottom: '36px',
+            textAlign: 'left',
+          }}>
+            <div style={{
+              background: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              borderRadius: '14px',
+              padding: '14px',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', color: '#065f46', fontWeight: 800, fontSize: '13px' }}>
+                <BookOpen size={16} /> 1 Passage
+              </div>
+              <div style={{ fontSize: '12px', color: '#64748b' }}>Factual reading text with all core answers</div>
+            </div>
+
+            <div style={{
+              background: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              borderRadius: '14px',
+              padding: '14px',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', color: '#065f46', fontWeight: 800, fontSize: '13px' }}>
+                <CheckCircle size={16} /> 4 MCQs
+              </div>
+              <div style={{ fontSize: '12px', color: '#64748b' }}>4 multiple-choice questions (1 mark each)</div>
+            </div>
+
+            <div style={{
+              background: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              borderRadius: '14px',
+              padding: '14px',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', color: '#065f46', fontWeight: 800, fontSize: '13px' }}>
+                <Clock size={16} /> {quizData?.duration_minutes || 5} Minutes
+              </div>
+              <div style={{ fontSize: '12px', color: '#64748b' }}>Live timed assessment with auto-submission</div>
+            </div>
+
+            <div style={{
+              background: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              borderRadius: '14px',
+              padding: '14px',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', color: '#065f46', fontWeight: 800, fontSize: '13px' }}>
+                <Shield size={16} /> 1 Attempt
+              </div>
+              <div style={{ fontSize: '12px', color: '#64748b' }}>Single fair attempt verified per participant</div>
+            </div>
+          </div>
+
+          {/* Primary Action Button: NEXT */}
+          <button
+            onClick={handleWelcomeNext}
+            className="btn-primary"
+            style={{
+              width: '100%',
+              maxWidth: '420px',
+              padding: '15px 24px',
+              fontSize: '16px',
+              fontWeight: 800,
+              borderRadius: '14px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px',
+              boxShadow: '0 6px 20px rgba(6, 95, 70, 0.25)',
+              cursor: 'pointer',
+            }}
+          >
+            <span>Proceed to Participate (Next)</span>
+            <ArrowRight size={18} />
+          </button>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* STEP 2: PARTICIPATION DETAILS (Phone Number, Photo, Name) */}
+      {/* ========================================================================= */}
+      {step === 2 && (
+        <div className="glass-card animate-fade-in" style={{
+          background: '#ffffff',
+          borderRadius: '24px',
+          border: '1.5px solid #e2e8f0',
+          padding: '36px 28px',
+          boxShadow: '0 12px 36px rgba(6, 95, 70, 0.08)',
+        }}>
+          {/* Header */}
+          <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: '#ecfdf5',
+              color: '#065f46',
+              fontSize: '11px',
+              fontWeight: 800,
+              padding: '4px 12px',
+              borderRadius: '999px',
+              marginBottom: '10px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+            }}>
+              <User size={13} /> Participant Registration
+            </div>
+            <h2 style={{ fontSize: '26px', fontWeight: 900, color: '#0f172a', marginBottom: '6px' }}>
+              Enter Your Information
+            </h2>
+            <p style={{ fontSize: '14px', color: '#64748b' }}>
+              Please enter your phone number, upload your photo, and write your name to register.
+            </p>
+          </div>
+
+          {error && (
+            <div style={{
+              background: '#fef2f2',
+              border: '1px solid #fecaca',
+              color: '#991b1b',
+              padding: '12px 16px',
+              borderRadius: '12px',
+              fontSize: '13px',
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              marginBottom: '20px',
+            }}>
+              <AlertCircle size={16} />
+              <span>{error}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleDetailsSubmit}>
+            {/* 1. Photo / Avatar Upload Section */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              marginBottom: '28px',
+              padding: '18px',
+              background: '#f8fafc',
+              borderRadius: '18px',
+              border: '1px solid #e2e8f0',
+            }}>
+              <div style={{ fontSize: '13px', fontWeight: 800, color: '#334155', marginBottom: '12px' }}>
+                Profile Photo (Optional / പ്രൊഫൈൽ ഫോട്ടോ)
+              </div>
+
+              {/* Photo Preview Frame */}
+              <div style={{
+                position: 'relative',
+                width: '88px',
+                height: '88px',
+                borderRadius: '50%',
+                background: '#e2e8f0',
+                border: '3px solid #059669',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden',
+                boxShadow: '0 4px 14px rgba(6, 95, 70, 0.15)',
+                marginBottom: '12px',
+              }}>
+                {photo ? (
+                  <img
+                    src={photo}
+                    alt="Participant avatar"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <User size={44} color="#94a3b8" />
+                )}
+              </div>
+
+              {/* Hidden File Input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                capture="user"
+                onChange={handlePhotoUpload}
+                style={{ display: 'none' }}
+              />
+
+              {/* Upload Buttons */}
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  style={{
+                    background: '#ecfdf5',
+                    border: '1px solid #a7f3d0',
+                    color: '#065f46',
+                    padding: '6px 14px',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  <Camera size={14} />
+                  <span>{photo ? 'Change Photo' : 'Upload / Camera Photo'}</span>
+                </button>
+
+                {photo && (
+                  <button
+                    type="button"
+                    onClick={() => setPhoto('')}
+                    style={{
+                      background: '#ffffff',
+                      border: '1px solid #e2e8f0',
+                      color: '#64748b',
+                      padding: '6px 12px',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+
+              {/* Quick Preset Avatars Picker */}
+              <div style={{ marginTop: '14px', textAlign: 'center' }}>
+                <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>
+                  Or pick a fun avatar:
+                </span>
+                <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', marginTop: '6px' }}>
+                  {AVATAR_PRESETS.map((preset, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setPhoto(preset)}
+                      style={{
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '50%',
+                        border: photo === preset ? '2px solid #059669' : '1px solid #e2e8f0',
+                        padding: 0,
+                        background: '#ffffff',
+                        cursor: 'pointer',
+                        overflow: 'hidden',
+                        transform: photo === preset ? 'scale(1.1)' : 'none',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      <img src={preset} alt={`Avatar ${idx + 1}`} style={{ width: '100%', height: '100%' }} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* 2. Phone Number Field */}
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '13px',
+                fontWeight: 700,
+                color: '#334155',
+                marginBottom: '6px',
+              }}>
+                Mobile Phone Number (ഫോൺ നമ്പർ) <span style={{ color: '#dc2626' }}>*</span>
+              </label>
+              <div style={{ position: 'relative' }}>
+                <div style={{
+                  position: 'absolute',
+                  left: '14px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: '#065f46',
+                  display: 'flex',
+                  alignItems: 'center',
+                }}>
+                  <Phone size={18} />
+                </div>
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  placeholder="e.g. 9876543210"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  onBlur={handlePhoneBlur}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '13px 14px 13px 44px',
+                    fontSize: '15px',
+                    borderRadius: '12px',
+                    border: '1.5px solid #cbd5e1',
+                    outline: 'none',
+                    fontFamily: 'inherit',
+                  }}
+                />
+              </div>
+              {lookupLoading && (
+                <div style={{ fontSize: '11px', color: '#059669', marginTop: '4px', fontWeight: 600 }}>
+                  🔍 Checking existing account...
+                </div>
+              )}
+              {lookupMessage && !lookupLoading && (
+                <div style={{ fontSize: '11px', color: '#059669', marginTop: '4px', fontWeight: 700 }}>
+                  ✓ {lookupMessage}
+                </div>
+              )}
+            </div>
+
+            {/* 3. Full Name Field */}
+            <div style={{ marginBottom: '28px' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '13px',
+                fontWeight: 700,
+                color: '#334155',
+                marginBottom: '6px',
+              }}>
+                Full Name (പേര്) <span style={{ color: '#dc2626' }}>*</span>
+              </label>
+              <div style={{ position: 'relative' }}>
+                <div style={{
+                  position: 'absolute',
+                  left: '14px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: '#065f46',
+                  display: 'flex',
+                  alignItems: 'center',
+                }}>
+                  <User size={18} />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Enter your full name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '13px 14px 13px 44px',
+                    fontSize: '15px',
+                    borderRadius: '12px',
+                    border: '1.5px solid #cbd5e1',
+                    outline: 'none',
+                    fontFamily: 'inherit',
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Step 2 Action Buttons: Back + Next */}
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+              <button
+                type="button"
+                onClick={() => setStep(1)}
+                style={{
+                  padding: '14px 20px',
+                  borderRadius: '12px',
+                  background: '#f1f5f9',
+                  border: '1px solid #e2e8f0',
+                  color: '#475569',
+                  fontWeight: 700,
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                <ArrowLeft size={16} />
+                <span>Back</span>
+              </button>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-primary"
+                style={{
+                  flex: 1,
+                  padding: '14px 24px',
+                  borderRadius: '12px',
+                  fontSize: '15px',
+                  fontWeight: 800,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  boxShadow: '0 4px 14px rgba(6, 95, 70, 0.25)',
+                }}
+              >
+                {loading ? (
+                  <span>Registering...</span>
+                ) : (
+                  <>
+                    <span>Next: Competition Rules</span>
+                    <ArrowRight size={18} />
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* STEP 3: RULES & GUIDELINES PAGE (Rules, Confirmation, Start Competition) */}
+      {/* ========================================================================= */}
+      {step === 3 && (
+        <div className="glass-card animate-fade-in" style={{
+          background: '#ffffff',
+          borderRadius: '24px',
+          border: '1.5px solid #e2e8f0',
+          padding: '36px 28px',
+          boxShadow: '0 12px 36px rgba(6, 95, 70, 0.08)',
+        }}>
+          {/* Header */}
+          <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: '#ecfdf5',
+              color: '#065f46',
+              fontSize: '11px',
+              fontWeight: 800,
+              padding: '4px 12px',
+              borderRadius: '999px',
+              marginBottom: '10px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+            }}>
+              <Shield size={13} /> Competition Guidelines
+            </div>
+            <h2 style={{ fontSize: '26px', fontWeight: 900, color: '#0f172a', marginBottom: '6px' }}>
+              Quiz Competition Rules (നിബന്ധനകൾ)
+            </h2>
+            <p style={{ fontSize: '14px', color: '#64748b' }}>
+              Please read the rules carefully before clicking the start button.
+            </p>
+          </div>
+
+          {/* Participant Profile Chip Summary */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            background: '#f8fafc',
+            border: '1.5px solid #e2e8f0',
+            borderRadius: '16px',
+            padding: '12px 18px',
+            marginBottom: '24px',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{
+                width: '42px',
+                height: '42px',
+                borderRadius: '50%',
+                background: '#065f46',
+                color: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden',
+                fontWeight: 800,
+                fontSize: '16px',
+                border: '2px solid #059669',
+              }}>
+                {photo ? (
+                  <img src={photo} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  name.charAt(0).toUpperCase()
+                )}
+              </div>
+              <div style={{ textAlign: 'left' }}>
+                <div style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a' }}>
+                  {name}
+                </div>
+                <div style={{ fontSize: '12px', color: '#64748b' }}>
+                  Phone: {phone}
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setStep(2)}
+              style={{
+                background: '#ffffff',
+                border: '1px solid #cbd5e1',
+                padding: '6px 12px',
+                borderRadius: '8px',
+                fontSize: '12px',
+                fontWeight: 700,
+                color: '#065f46',
+                cursor: 'pointer',
+              }}
+            >
+              Edit Details
+            </button>
+          </div>
+
+          {/* Detailed Rules List */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '28px' }}>
+            <div style={{
+              display: 'flex',
+              gap: '14px',
+              padding: '14px',
+              background: '#f0fdf4',
+              borderRadius: '14px',
+              border: '1px solid #bbf7d0',
+            }}>
+              <div style={{
+                width: '28px',
+                height: '28px',
+                borderRadius: '8px',
+                background: '#059669',
+                color: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 800,
+                fontSize: '13px',
+                flexShrink: 0,
+              }}>
+                1
+              </div>
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: 800, color: '#065f46', marginBottom: '2px' }}>
+                  Read the Factual Passage Carefully (ഖണ്ഡിക ശ്രദ്ധിച്ചു വായിക്കുക)
+                </div>
+                <div style={{ fontSize: '13px', color: '#334155', lineHeight: 1.5 }}>
+                  A reading passage containing all key facts will be presented at the top of the quiz. Read every sentence attentively.
+                </div>
+              </div>
+            </div>
+
+            <div style={{
+              display: 'flex',
+              gap: '14px',
+              padding: '14px',
+              background: '#f8fafc',
+              borderRadius: '14px',
+              border: '1px solid #e2e8f0',
+            }}>
+              <div style={{
+                width: '28px',
+                height: '28px',
+                borderRadius: '8px',
+                background: '#0f172a',
+                color: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 800,
+                fontSize: '13px',
+                flexShrink: 0,
+              }}>
+                2
+              </div>
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a', marginBottom: '2px' }}>
+                  Answer 4 Multiple Choice Questions (4 ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകുക)
+                </div>
+                <div style={{ fontSize: '13px', color: '#475569', lineHeight: 1.5 }}>
+                  Select one option (A, B, C, or D) for each question. You can change your choice anytime before submitting.
+                </div>
+              </div>
+            </div>
+
+            <div style={{
+              display: 'flex',
+              gap: '14px',
+              padding: '14px',
+              background: '#f8fafc',
+              borderRadius: '14px',
+              border: '1px solid #e2e8f0',
+            }}>
+              <div style={{
+                width: '28px',
+                height: '28px',
+                borderRadius: '8px',
+                background: '#0f172a',
+                color: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 800,
+                fontSize: '13px',
+                flexShrink: 0,
+              }}>
+                3
+              </div>
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a', marginBottom: '2px' }}>
+                  Live Countdown Timer (സമയ പരിധി: {quizData?.duration_minutes || 5} മിനിറ്റ്)
+                </div>
+                <div style={{ fontSize: '13px', color: '#475569', lineHeight: 1.5 }}>
+                  Keep an eye on the countdown clock. When the timer reaches 0:00, the quiz automatically locks and submits your chosen answers.
+                </div>
+              </div>
+            </div>
+
+            <div style={{
+              display: 'flex',
+              gap: '14px',
+              padding: '14px',
+              background: '#f8fafc',
+              borderRadius: '14px',
+              border: '1px solid #e2e8f0',
+            }}>
+              <div style={{
+                width: '28px',
+                height: '28px',
+                borderRadius: '8px',
+                background: '#0f172a',
+                color: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 800,
+                fontSize: '13px',
+                flexShrink: 0,
+              }}>
+                4
+              </div>
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a', marginBottom: '2px' }}>
+                  Single Attempt Policy (ഒരു അവസരം മാത്രം)
+                </div>
+                <div style={{ fontSize: '13px', color: '#475569', lineHeight: 1.5 }}>
+                  Each registered phone number gets exactly one attempt per daily quiz session. No retakes are allowed.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Confirmation Checkbox */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            marginBottom: '28px',
+            padding: '12px 16px',
+            background: '#ecfdf5',
+            borderRadius: '12px',
+            border: '1px solid #a7f3d0',
+          }}>
+            <input
+              type="checkbox"
+              id="agree-rules"
+              checked={agreeRules}
+              onChange={(e) => setAgreeRules(e.target.checked)}
+              style={{ width: '18px', height: '18px', accentColor: '#059669', cursor: 'pointer' }}
+            />
+            <label htmlFor="agree-rules" style={{ fontSize: '13px', fontWeight: 700, color: '#065f46', cursor: 'pointer' }}>
+              I have read and agree to follow the competition rules and guidelines.
+            </label>
+          </div>
+
+          {/* Action Buttons: Back + Start Competition */}
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <button
+              type="button"
+              onClick={() => setStep(2)}
+              style={{
+                padding: '14px 20px',
+                borderRadius: '12px',
+                background: '#f1f5f9',
+                border: '1px solid #e2e8f0',
+                color: '#475569',
+                fontWeight: 700,
+                fontSize: '14px',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+            >
+              <ArrowLeft size={16} />
+              <span>Back</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleStartCompetition}
+              disabled={!agreeRules}
+              className="btn-primary"
+              style={{
+                flex: 1,
+                padding: '15px 24px',
+                borderRadius: '14px',
+                fontSize: '16px',
+                fontWeight: 900,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '10px',
+                cursor: agreeRules ? 'pointer' : 'not-allowed',
+                background: agreeRules ? 'linear-gradient(135deg, #059669 0%, #047857 100%)' : '#94a3b8',
+                boxShadow: agreeRules ? '0 6px 20px rgba(6, 95, 70, 0.35)' : 'none',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <Play size={18} fill="#ffffff" />
+              <span>Start Competition (മത്സരം ആരംഭിക്കുക)</span>
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};

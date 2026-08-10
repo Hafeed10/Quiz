@@ -23,10 +23,10 @@ export const AuthProvider = ({ children }) => {
 
   const [loading, setLoading] = useState(false);
 
-  const loginParticipant = async (name, phone_number) => {
+  const loginParticipant = async (name, phone_number, photo = '') => {
     setLoading(true);
     try {
-      const res = await api.authParticipant(name, phone_number);
+      const res = await api.authParticipant(name, phone_number, photo);
       if (res.success && res.participant) {
         setParticipant(res.participant);
         localStorage.setItem('daily_quiz_participant', JSON.stringify(res.participant));
