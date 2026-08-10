@@ -63,10 +63,14 @@ export const Header = ({ currentView, setCurrentView, openLoginModal, isQuizOpen
               alignItems: 'center',
               justifyContent: 'center',
               boxShadow: '0 2px 8px rgba(6, 95, 70, 0.3)',
+              flexShrink: 0,
             }}>
               <BookOpen size={19} />
             </div>
-            <span>Quiz <span style={{ color: '#059669' }}>Bazar</span></span>
+            <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.15 }}>
+              <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Ahlusuffa</span>
+              <span style={{ fontSize: '17px', fontWeight: 800, color: '#0f172a' }}>Quiz <span style={{ color: '#059669' }}>Bazar</span></span>
+            </div>
           </div>
 
           {/* Admin Badge if on Admin view */}
