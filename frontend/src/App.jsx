@@ -15,7 +15,6 @@ import {
 } from './pages/participant/QuizStatusScreens';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminLogin } from './pages/admin/AdminLogin';
-import { MobileBottomNav } from './components/MobileBottomNav';
 
 export function App() {
   const { participant, isAdmin } = useAuth();
@@ -216,17 +215,6 @@ export function App() {
           }
         }}
         onLoginSuccess={handleLoginSuccess}
-      />
-
-      {/* Mobile App Bottom Navigation Bar */}
-      <MobileBottomNav
-        currentView={currentView}
-        setCurrentView={handleViewChange}
-        openLoginModal={() => {
-          setLoginModalOpen(true);
-          window.location.hash = '#login';
-        }}
-        isQuizOpen={currentView === 'participant' && participantSubView === 'quiz'}
       />
     </div>
   );

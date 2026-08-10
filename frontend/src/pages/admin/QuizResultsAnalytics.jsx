@@ -350,7 +350,7 @@ export const QuizResultsAnalytics = ({ quizId }) => {
       {/* Bottom Two Cards: Score Distribution | Peak Engagement Hours */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
         gap: '24px',
       }}>
         {/* Score Distribution */}

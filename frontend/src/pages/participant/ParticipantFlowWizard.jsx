@@ -182,34 +182,24 @@ export const ParticipantFlowWizard = ({
   };
 
   return (
-    <div className="app-container animate-fade-in" style={{ maxWidth: '780px', padding: '24px 16px 100px', margin: '0 auto' }}>
+    <div className="wizard-container animate-fade-in">
       {/* Visual Step Indicator Banner */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '8px',
-        marginBottom: '28px',
-      }}>
+      <div className="wizard-step-indicator">
         {[
           { num: 1, label: 'Welcome' },
           { num: 2, label: 'Enter Details' },
           { num: 3, label: 'Rules' },
         ].map((item, idx) => (
           <React.Fragment key={item.num}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '6px 14px',
-              borderRadius: '999px',
-              background: step === item.num ? '#ecfdf5' : '#ffffff',
-              border: step === item.num ? '1.5px solid #059669' : '1px solid #e2e8f0',
-              color: step === item.num ? '#065f46' : step > item.num ? '#059669' : '#94a3b8',
-              fontWeight: step === item.num ? 800 : 600,
-              fontSize: '12px',
-              transition: 'all 0.2s ease',
-            }}>
+            <div
+              className="wizard-step-pill"
+              style={{
+                background: step === item.num ? '#ecfdf5' : '#ffffff',
+                border: step === item.num ? '1.5px solid #059669' : '1px solid #e2e8f0',
+                color: step === item.num ? '#065f46' : step > item.num ? '#059669' : '#94a3b8',
+                fontWeight: step === item.num ? 800 : 600,
+              }}
+            >
               <span style={{
                 width: '20px',
                 height: '20px',
@@ -221,6 +211,7 @@ export const ParticipantFlowWizard = ({
                 justifyContent: 'center',
                 fontSize: '11px',
                 fontWeight: 800,
+                flexShrink: 0,
               }}>
                 {step > item.num ? <Check size={12} strokeWidth={3} /> : item.num}
               </span>
@@ -228,9 +219,10 @@ export const ParticipantFlowWizard = ({
             </div>
             {idx < 2 && (
               <div style={{
-                width: '24px',
+                width: '20px',
                 height: '2px',
                 background: step > item.num ? '#10b981' : '#e2e8f0',
+                flexShrink: 0,
               }} />
             )}
           </React.Fragment>
@@ -241,14 +233,7 @@ export const ParticipantFlowWizard = ({
       {/* STEP 1: WELCOME SCREEN (Logo, Quiz Name, Overview, Next Button) */}
       {/* ========================================================================= */}
       {step === 1 && (
-        <div className="glass-card animate-fade-in" style={{
-          background: '#ffffff',
-          borderRadius: '24px',
-          border: '1.5px solid #e2e8f0',
-          padding: '36px 28px',
-          textAlign: 'center',
-          boxShadow: '0 12px 36px rgba(6, 95, 70, 0.08)',
-        }}>
+        <div className="wizard-card animate-fade-in" style={{ textAlign: 'center' }}>
           {/* Logo & Brand Header */}
           <div style={{
             display: 'inline-flex',
@@ -345,13 +330,7 @@ export const ParticipantFlowWizard = ({
           </p>
 
           {/* 4 Pillars Summary Grid */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-            gap: '14px',
-            marginBottom: '36px',
-            textAlign: 'left',
-          }}>
+          <div className="wizard-grid-4">
             <div style={{
               background: '#f8fafc',
               border: '1px solid #e2e8f0',
@@ -418,6 +397,7 @@ export const ParticipantFlowWizard = ({
               gap: '10px',
               boxShadow: '0 6px 20px rgba(6, 95, 70, 0.25)',
               cursor: 'pointer',
+              minHeight: '48px',
             }}
           >
             <span>Proceed to Participate (Next)</span>
@@ -430,13 +410,7 @@ export const ParticipantFlowWizard = ({
       {/* STEP 2: PARTICIPATION DETAILS (Phone Number, Photo, Name) */}
       {/* ========================================================================= */}
       {step === 2 && (
-        <div className="glass-card animate-fade-in" style={{
-          background: '#ffffff',
-          borderRadius: '24px',
-          border: '1.5px solid #e2e8f0',
-          padding: '36px 28px',
-          boxShadow: '0 12px 36px rgba(6, 95, 70, 0.08)',
-        }}>
+        <div className="wizard-card animate-fade-in">
           {/* Header */}
           <div style={{ textAlign: 'center', marginBottom: '28px' }}>
             <div style={{
@@ -543,17 +517,18 @@ export const ParticipantFlowWizard = ({
                     background: '#ecfdf5',
                     border: '1px solid #a7f3d0',
                     color: '#065f46',
-                    padding: '6px 14px',
+                    padding: '8px 16px',
                     borderRadius: '8px',
-                    fontSize: '12px',
+                    fontSize: '13px',
                     fontWeight: 700,
                     cursor: 'pointer',
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '6px',
+                    minHeight: '40px',
                   }}
                 >
-                  <Camera size={14} />
+                  <Camera size={15} />
                   <span>{photo ? 'Change Photo' : 'Upload / Camera Photo'}</span>
                 </button>
 
@@ -565,11 +540,12 @@ export const ParticipantFlowWizard = ({
                       background: '#ffffff',
                       border: '1px solid #e2e8f0',
                       color: '#64748b',
-                      padding: '6px 12px',
+                      padding: '8px 14px',
                       borderRadius: '8px',
-                      fontSize: '12px',
+                      fontSize: '13px',
                       fontWeight: 600,
                       cursor: 'pointer',
+                      minHeight: '40px',
                     }}
                   >
                     Remove
@@ -578,21 +554,21 @@ export const ParticipantFlowWizard = ({
               </div>
 
               {/* Quick Preset Avatars Picker */}
-              <div style={{ marginTop: '14px', textAlign: 'center' }}>
+              <div style={{ marginTop: '14px', textAlign: 'center', width: '100%' }}>
                 <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>
                   Or pick a fun avatar:
                 </span>
-                <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', marginTop: '6px' }}>
+                <div className="wizard-avatar-grid">
                   {AVATAR_PRESETS.map((preset, idx) => (
                     <button
                       key={idx}
                       type="button"
                       onClick={() => setPhoto(preset)}
                       style={{
-                        width: '32px',
-                        height: '32px',
+                        width: '36px',
+                        height: '36px',
                         borderRadius: '50%',
-                        border: photo === preset ? '2px solid #059669' : '1px solid #e2e8f0',
+                        border: photo === preset ? '2.5px solid #059669' : '1.5px solid #e2e8f0',
                         padding: 0,
                         background: '#ffffff',
                         cursor: 'pointer',
@@ -642,11 +618,12 @@ export const ParticipantFlowWizard = ({
                   style={{
                     width: '100%',
                     padding: '13px 14px 13px 44px',
-                    fontSize: '15px',
+                    fontSize: '16px',
                     borderRadius: '12px',
                     border: '1.5px solid #cbd5e1',
                     outline: 'none',
                     fontFamily: 'inherit',
+                    minHeight: '48px',
                   }}
                 />
               </div>
@@ -694,18 +671,19 @@ export const ParticipantFlowWizard = ({
                   style={{
                     width: '100%',
                     padding: '13px 14px 13px 44px',
-                    fontSize: '15px',
+                    fontSize: '16px',
                     borderRadius: '12px',
                     border: '1.5px solid #cbd5e1',
                     outline: 'none',
                     fontFamily: 'inherit',
+                    minHeight: '48px',
                   }}
                 />
               </div>
             </div>
 
             {/* Step 2 Action Buttons: Back + Next */}
-            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <div className="wizard-btn-row">
               <button
                 type="button"
                 onClick={() => setStep(1)}
@@ -720,7 +698,9 @@ export const ParticipantFlowWizard = ({
                   cursor: 'pointer',
                   display: 'inline-flex',
                   alignItems: 'center',
+                  justifyContent: 'center',
                   gap: '6px',
+                  minHeight: '48px',
                 }}
               >
                 <ArrowLeft size={16} />
@@ -743,6 +723,7 @@ export const ParticipantFlowWizard = ({
                   gap: '8px',
                   cursor: loading ? 'not-allowed' : 'pointer',
                   boxShadow: '0 4px 14px rgba(6, 95, 70, 0.25)',
+                  minHeight: '48px',
                 }}
               >
                 {loading ? (
@@ -763,13 +744,7 @@ export const ParticipantFlowWizard = ({
       {/* STEP 3: RULES & GUIDELINES PAGE (Rules, Confirmation, Start Competition) */}
       {/* ========================================================================= */}
       {step === 3 && (
-        <div className="glass-card animate-fade-in" style={{
-          background: '#ffffff',
-          borderRadius: '24px',
-          border: '1.5px solid #e2e8f0',
-          padding: '36px 28px',
-          boxShadow: '0 12px 36px rgba(6, 95, 70, 0.08)',
-        }}>
+        <div className="wizard-card animate-fade-in">
           {/* Header */}
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
             <div style={{
@@ -806,8 +781,10 @@ export const ParticipantFlowWizard = ({
             borderRadius: '16px',
             padding: '12px 18px',
             marginBottom: '24px',
+            gap: '12px',
+            flexWrap: 'wrap',
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
               <div style={{
                 width: '42px',
                 height: '42px',
@@ -821,6 +798,7 @@ export const ParticipantFlowWizard = ({
                 fontWeight: 800,
                 fontSize: '16px',
                 border: '2px solid #059669',
+                flexShrink: 0,
               }}>
                 {photo ? (
                   <img src={photo} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -828,8 +806,8 @@ export const ParticipantFlowWizard = ({
                   name.charAt(0).toUpperCase()
                 )}
               </div>
-              <div style={{ textAlign: 'left' }}>
-                <div style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a' }}>
+              <div style={{ textAlign: 'left', minWidth: 0 }}>
+                <div style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {name}
                 </div>
                 <div style={{ fontSize: '12px', color: '#64748b' }}>
@@ -850,6 +828,7 @@ export const ParticipantFlowWizard = ({
                 fontWeight: 700,
                 color: '#065f46',
                 cursor: 'pointer',
+                minHeight: '36px',
               }}
             >
               Edit Details
@@ -1007,7 +986,7 @@ export const ParticipantFlowWizard = ({
               id="agree-rules"
               checked={agreeRules}
               onChange={(e) => setAgreeRules(e.target.checked)}
-              style={{ width: '18px', height: '18px', accentColor: '#059669', cursor: 'pointer' }}
+              style={{ width: '20px', height: '20px', accentColor: '#059669', cursor: 'pointer', flexShrink: 0 }}
             />
             <label htmlFor="agree-rules" style={{ fontSize: '13px', fontWeight: 700, color: '#065f46', cursor: 'pointer' }}>
               I have read and agree to follow the competition rules and guidelines.
@@ -1015,7 +994,7 @@ export const ParticipantFlowWizard = ({
           </div>
 
           {/* Action Buttons: Back + Start Competition */}
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <div className="wizard-btn-row">
             <button
               type="button"
               onClick={() => setStep(2)}
@@ -1030,7 +1009,9 @@ export const ParticipantFlowWizard = ({
                 cursor: 'pointer',
                 display: 'inline-flex',
                 alignItems: 'center',
+                justifyContent: 'center',
                 gap: '6px',
+                minHeight: '48px',
               }}
             >
               <ArrowLeft size={16} />
@@ -1056,6 +1037,7 @@ export const ParticipantFlowWizard = ({
                 background: agreeRules ? 'linear-gradient(135deg, #059669 0%, #047857 100%)' : '#94a3b8',
                 boxShadow: agreeRules ? '0 6px 20px rgba(6, 95, 70, 0.35)' : 'none',
                 transition: 'all 0.2s ease',
+                minHeight: '48px',
               }}
             >
               <Play size={18} fill="#ffffff" />

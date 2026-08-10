@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, ClipboardList, History, Settings } from 'lucide-react';
+import { Home, ClipboardList } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export const MobileBottomNav = ({ currentView, setCurrentView, openLoginModal, isQuizOpen }) => {
@@ -20,27 +20,9 @@ export const MobileBottomNav = ({ currentView, setCurrentView, openLoginModal, i
     },
     {
       key: 'participant',
-      label: 'Assessments',
+      label: 'Quiz',
       icon: <ClipboardList size={19} />,
       onClick: () => setCurrentView('participant'),
-    },
-    {
-      key: 'history',
-      label: 'History',
-      icon: <History size={19} />,
-      onClick: () => {
-        if (!participant) {
-          openLoginModal();
-        } else {
-          setCurrentView('participant');
-        }
-      },
-    },
-    {
-      key: 'settings',
-      label: 'Settings',
-      icon: <Settings size={19} />,
-      onClick: () => openLoginModal(),
     },
   ];
 

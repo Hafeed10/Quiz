@@ -1,20 +1,31 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { BookOpen, ShieldCheck, LogOut, Lock, User, QrCode, Clock } from 'lucide-react';
+import { BookOpen, ShieldCheck, LogOut, Lock, User, Clock, Phone } from 'lucide-react';
 
 export const Header = ({ currentView, setCurrentView, openLoginModal, isQuizOpen = false }) => {
   const { participant, logoutParticipant, isAdmin, logoutAdmin } = useAuth();
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const profileMenuRef = useRef(null);
 
   const userInitial = participant?.name ? participant.name.charAt(0).toUpperCase() : 'U';
 
+  // Close profile dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setShowProfileMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
     <header style={{
-      borderBottom: '1px solid #e2e8f0',
-      background: '#ffffff',
-      position: 'sticky',
-      top: 0,
+      borderBottom: 'none',
+      background: 'transparent',
+      position: 'relative',
       zIndex: 50,
-      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
     }}>
       <div style={{
         maxWidth: '1200px',
@@ -57,119 +68,23 @@ export const Header = ({ currentView, setCurrentView, openLoginModal, isQuizOpen
             <span>Quiz <span style={{ color: '#059669' }}>Bazar</span></span>
           </div>
 
-          {/* Navigation Links — Desktop */}
-          {currentView === 'admin' ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{
-                background: '#f1f5f9',
-                color: '#334155',
-                fontSize: '11px',
-                fontWeight: 800,
-                padding: '4px 10px',
-                borderRadius: '6px',
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                border: '1px solid #e2e8f0',
-              }}>
-                Admin Console
-              </span>
-            </div>
-          ) : (
-            <nav className="header-desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              {!isQuizOpen && (
-                <button
-                  onClick={() => setCurrentView('launch')}
-                  style={{
-                    background: currentView === 'launch' ? '#ecfdf5' : 'transparent',
-                    color: currentView === 'launch' ? '#065f46' : '#475569',
-                    fontWeight: currentView === 'launch' ? 700 : 500,
-                    fontSize: '13px',
-                    padding: '7px 14px',
-                    borderRadius: 'var(--radius-md)',
-                    border: currentView === 'launch' ? '1px solid #a7f3d0' : '1px solid transparent',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                  }}
-                >
-                  <QrCode size={14} color={currentView === 'launch' ? '#065f46' : '#64748b'} />
-                  QR Code Portal
-                </button>
-              )}
-
-              <button
-                onClick={() => {
-                  if (!isQuizOpen) setCurrentView('participant');
-                }}
-                style={{
-                  background: currentView === 'participant' ? '#ecfdf5' : 'transparent',
-                  color: currentView === 'participant' ? '#065f46' : '#475569',
-                  fontWeight: currentView === 'participant' ? 700 : 500,
-                  fontSize: '13px',
-                  padding: '7px 14px',
-                  borderRadius: 'var(--radius-md)',
-                  border: currentView === 'participant' ? '1px solid #a7f3d0' : '1px solid transparent',
-                  cursor: isQuizOpen ? 'default' : 'pointer',
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                Participant Quiz {isQuizOpen ? '(Active)' : ''}
-              </button>
-            </nav>
+          {/* Admin Badge if on Admin view */}
+          {currentView === 'admin' && (
+            <span style={{
+              background: '#f1f5f9',
+              color: '#334155',
+              fontSize: '11px',
+              fontWeight: 800,
+              padding: '4px 10px',
+              borderRadius: '6px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              border: '1px solid #e2e8f0',
+            }}>
+              Admin Console
+            </span>
           )}
         </div>
-
-        {/* Mobile Header Right Item */}
-        {currentView !== 'admin' && (
-          <div className="header-mobile-avatar-wrap">
-            {isQuizOpen ? (
-              <span style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '5px',
-                background: '#c8f5df',
-                color: '#065f46',
-                fontSize: '12px',
-                fontWeight: 800,
-                padding: '4px 10px',
-                borderRadius: '999px',
-                fontFamily: 'var(--font-mono)',
-              }}>
-                <Clock size={13} color="#065f46" />
-                <span>04:59</span>
-              </span>
-            ) : (
-              <button
-                onClick={openLoginModal}
-                aria-label="User Account"
-                style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '50%',
-                  background: '#065f46',
-                  color: '#ffffff',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 800,
-                  fontSize: '13px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  overflow: 'hidden',
-                  boxShadow: '0 2px 6px rgba(6, 95, 70, 0.25)',
-                }}
-              >
-                {participant?.photo ? (
-                  <img src={participant.photo} alt={participant.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : (
-                  userInitial
-                )}
-              </button>
-            )}
-          </div>
-        )}
 
         {/* Right: Participant Info & Desktop Actions */}
         <div className="header-admin-controls" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -193,29 +108,36 @@ export const Header = ({ currentView, setCurrentView, openLoginModal, isQuizOpen
             </span>
           )}
 
-          {/* Participant Identification Chip — only visible on public/participant views, hidden in Admin Console */}
+          {/* Participant Identification Avatar — clickable popup for Name, Phone & Logout */}
           {currentView !== 'admin' && participant ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                background: '#f8fafc',
-                padding: '4px 12px 4px 6px',
-                borderRadius: '999px',
-                border: '1px solid #e2e8f0',
-              }}>
+            <div ref={profileMenuRef} style={{ position: 'relative' }}>
+              <button
+                type="button"
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                title="View profile & account"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  background: showProfileMenu ? '#ecfdf5' : '#f8fafc',
+                  padding: '3px',
+                  borderRadius: '999px',
+                  border: showProfileMenu ? '2px solid #059669' : '1.5px solid #cbd5e1',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                  boxShadow: '0 2px 6px rgba(0, 0, 0, 0.05)',
+                }}
+              >
                 <div style={{
-                  width: '28px',
-                  height: '28px',
+                  width: '32px',
+                  height: '32px',
                   borderRadius: '50%',
                   background: '#065f46',
                   color: '#ffffff',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontWeight: 700,
-                  fontSize: '11px',
+                  fontWeight: 800,
+                  fontSize: '12px',
                   overflow: 'hidden',
                 }}>
                   {participant.photo ? (
@@ -224,33 +146,91 @@ export const Header = ({ currentView, setCurrentView, openLoginModal, isQuizOpen
                     userInitial
                   )}
                 </div>
-                <div style={{ textAlign: 'left' }}>
-                  <div style={{ fontSize: '12px', fontWeight: 700, color: '#0f172a' }}>
-                    {participant.name}
-                  </div>
-                  <div style={{ fontSize: '10px', color: '#64748b' }}>
-                    {participant.masked_phone}
-                  </div>
-                </div>
-              </div>
+              </button>
 
-              {!isQuizOpen && (
-                <button
-                  onClick={logoutParticipant}
-                  title="Sign out participant"
+              {/* Floating Profile & Logout Dropdown Menu */}
+              {showProfileMenu && (
+                <div
+                  className="glass-card animate-fade-in"
                   style={{
-                    background: '#f8fafc',
-                    border: '1px solid #e2e8f0',
-                    color: '#64748b',
-                    padding: '6px',
-                    borderRadius: '6px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    cursor: 'pointer',
+                    position: 'absolute',
+                    top: 'calc(100% + 10px)',
+                    right: 0,
+                    width: '240px',
+                    background: '#ffffff',
+                    borderRadius: '16px',
+                    border: '1.5px solid #e2e8f0',
+                    boxShadow: '0 14px 36px rgba(6, 95, 70, 0.12)',
+                    padding: '16px',
+                    zIndex: 9999,
+                    textAlign: 'left',
                   }}
                 >
-                  <LogOut size={15} />
-                </button>
+                  {/* Participant Name & Phone */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
+                    <div style={{
+                      width: '42px',
+                      height: '42px',
+                      borderRadius: '50%',
+                      background: '#065f46',
+                      color: '#ffffff',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 800,
+                      fontSize: '15px',
+                      overflow: 'hidden',
+                      border: '2px solid #059669',
+                      flexShrink: 0,
+                    }}>
+                      {participant.photo ? (
+                        <img src={participant.photo} alt={participant.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        userInitial
+                      )}
+                    </div>
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {participant.name}
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {participant.phone_number || participant.masked_phone}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ height: '1px', background: '#f1f5f9', margin: '0 -16px 12px' }} />
+
+                  {/* Logout Button */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowProfileMenu(false);
+                      logoutParticipant();
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '10px 14px',
+                      borderRadius: '10px',
+                      background: '#fef2f2',
+                      border: '1px solid #fecaca',
+                      color: '#dc2626',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      transition: 'all 0.15s ease',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = '#fee2e2')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = '#fef2f2')}
+                  >
+                    <LogOut size={15} />
+                    <span>Log Out</span>
+                  </button>
+                </div>
               )}
             </div>
           ) : (

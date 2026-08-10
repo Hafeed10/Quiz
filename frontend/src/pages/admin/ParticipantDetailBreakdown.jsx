@@ -42,7 +42,7 @@ export const ParticipantDetailBreakdown = ({ attempt, onBack }) => {
       {/* Top Two Cards: Participant Profile | Standing */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
         gap: '24px',
         marginBottom: '36px',
       }}>
