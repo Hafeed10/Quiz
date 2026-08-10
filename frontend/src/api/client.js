@@ -1,15 +1,7 @@
-function getBaseUrl() {
-  if (typeof window !== 'undefined' && window.location && window.location.hostname) {
-    const hostname = window.location.hostname;
-    if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
-      return `http://${hostname}:8000/api`;
-    }
-  }
-  return 'http://127.0.0.1:8000/api';
-}
+const BASE_URL = '/api';
 
 async function request(endpoint, options = {}) {
-  const url = `${getBaseUrl()}${endpoint}`;
+  const url = `${BASE_URL}${endpoint}`;
   const headers = {
     'Content-Type': 'application/json',
     ...(options.headers || {}),
