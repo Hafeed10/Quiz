@@ -100,11 +100,11 @@ export const QRCodePortalPage = ({ quizData, onOpenWebsite }) => {
           }}>
             <BookOpen size={18} />
           </div>
-          <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', marginBottom: '2px' }}>
-            1 Factual Passage
+          <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', marginBottom: '3px' }}>
+            1 Passage
           </div>
           <div style={{ fontSize: '11px', color: '#64748b', lineHeight: 1.4 }}>
-            Reading story with all key answers
+            Factual reading text with all core answers
           </div>
         </div>
 
@@ -123,15 +123,15 @@ export const QRCodePortalPage = ({ quizData, onOpenWebsite }) => {
           }}>
             <CheckCircle2 size={18} />
           </div>
-          <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', marginBottom: '2px' }}>
+          <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', marginBottom: '3px' }}>
             4 MCQs
           </div>
           <div style={{ fontSize: '11px', color: '#64748b', lineHeight: 1.4 }}>
-            4 timed questions (1 mark each)
+            4 multiple-choice questions (1 mark each)
           </div>
         </div>
 
-        {/* Card 3: Timed Window */}
+        {/* Card 3: 20 Minutes / Timed */}
         <div className="hero-card-2x2">
           <div style={{
             width: '36px',
@@ -146,15 +146,15 @@ export const QRCodePortalPage = ({ quizData, onOpenWebsite }) => {
           }}>
             <Clock size={18} />
           </div>
-          <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', marginBottom: '2px' }}>
-            {quizData?.duration_minutes || 5} Min Window
+          <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', marginBottom: '3px' }}>
+            {quizData?.duration_minutes || 20} Minutes
           </div>
           <div style={{ fontSize: '11px', color: '#64748b', lineHeight: 1.4 }}>
-            Fast assessment with auto-submission
+            Live timed assessment with auto-submission
           </div>
         </div>
 
-        {/* Card 4: Daily Leaderboard */}
+        {/* Card 4: 1 Attempt */}
         <div className="hero-card-2x2">
           <div style={{
             width: '36px',
@@ -167,13 +167,13 @@ export const QRCodePortalPage = ({ quizData, onOpenWebsite }) => {
             justifyContent: 'center',
             marginBottom: '10px',
           }}>
-            <Award size={18} />
+            <ShieldCheck size={18} />
           </div>
-          <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', marginBottom: '2px' }}>
-            Leaderboard
+          <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', marginBottom: '3px' }}>
+            1 Attempt
           </div>
           <div style={{ fontSize: '11px', color: '#64748b', lineHeight: 1.4 }}>
-            Daily winner rankings & honors
+            Single fair attempt verified per participant
           </div>
         </div>
       </div>

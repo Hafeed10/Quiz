@@ -234,31 +234,36 @@ export const ParticipantFlowWizard = ({
       {/* ========================================================================= */}
       {step === 1 && (
         <div className="wizard-card animate-fade-in" style={{ textAlign: 'center' }}>
-          {/* Logo & Brand Header */}
+          {/* Logo & Brand Header (Transparent & Larger Size) */}
           <div style={{
             display: 'inline-flex',
             alignItems: 'center',
-            gap: '12px',
-            background: '#f8fafc',
-            padding: '8px 20px',
-            borderRadius: '999px',
-            border: '1px solid #e2e8f0',
-            marginBottom: '24px',
+            gap: '14px',
+            background: 'transparent',
+            padding: '4px 0',
+            marginBottom: '20px',
           }}>
             <div style={{
-              width: '38px',
-              height: '38px',
-              borderRadius: '10px',
-              background: '#065f46',
+              width: '52px',
+              height: '52px',
+              borderRadius: '14px',
+              background: 'linear-gradient(135deg, #065f46 0%, #059669 100%)',
               color: '#ffffff',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 3px 10px rgba(6, 95, 70, 0.3)',
+              boxShadow: '0 8px 20px rgba(6, 95, 70, 0.25)',
+              flexShrink: 0,
             }}>
-              <BookOpen size={22} />
+              <BookOpen size={28} />
             </div>
-            <span style={{ fontSize: '22px', fontWeight: 900, color: '#0f172a', letterSpacing: '-0.02em' }}>
+            <span style={{
+              fontSize: 'clamp(28px, 6.5vw, 38px)',
+              fontWeight: 900,
+              color: '#0f172a',
+              letterSpacing: '-0.03em',
+              lineHeight: 1,
+            }}>
               Quiz <span style={{ color: '#059669' }}>Bazar</span>
             </span>
           </div>
@@ -329,54 +334,138 @@ export const ParticipantFlowWizard = ({
             Welcome to today’s reading comprehension competition! Read the passage carefully, answer 4 timed questions, and compete for top honors on the leaderboard.
           </p>
 
-          {/* 4 Pillars Summary Grid */}
+          {/* 4 Pillars Summary 2x2 Grid */}
           <div className="wizard-grid-4">
+            {/* Box 1: 1 Passage */}
             <div style={{
-              background: '#f8fafc',
-              border: '1px solid #e2e8f0',
-              borderRadius: '14px',
-              padding: '14px',
+              background: '#ffffff',
+              border: '1.5px solid #e2e8f0',
+              borderRadius: '18px',
+              padding: '16px 14px',
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.03)',
+              display: 'flex',
+              flexDirection: 'column',
+              minHeight: '125px',
+              textAlign: 'left',
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', color: '#065f46', fontWeight: 800, fontSize: '13px' }}>
-                <BookOpen size={16} /> 1 Passage
+              <div style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '10px',
+                background: '#ecfdf5',
+                color: '#065f46',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '10px',
+              }}>
+                <BookOpen size={18} />
               </div>
-              <div style={{ fontSize: '12px', color: '#64748b' }}>Factual reading text with all core answers</div>
+              <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', marginBottom: '3px' }}>
+                1 Passage
+              </div>
+              <div style={{ fontSize: '11px', color: '#64748b', lineHeight: 1.4 }}>
+                Factual reading text with all core answers
+              </div>
             </div>
 
+            {/* Box 2: 4 MCQs */}
             <div style={{
-              background: '#f8fafc',
-              border: '1px solid #e2e8f0',
-              borderRadius: '14px',
-              padding: '14px',
+              background: '#ffffff',
+              border: '1.5px solid #e2e8f0',
+              borderRadius: '18px',
+              padding: '16px 14px',
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.03)',
+              display: 'flex',
+              flexDirection: 'column',
+              minHeight: '125px',
+              textAlign: 'left',
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', color: '#065f46', fontWeight: 800, fontSize: '13px' }}>
-                <CheckCircle size={16} /> 4 MCQs
+              <div style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '10px',
+                background: '#ecfdf5',
+                color: '#065f46',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '10px',
+              }}>
+                <CheckCircle size={18} />
               </div>
-              <div style={{ fontSize: '12px', color: '#64748b' }}>4 multiple-choice questions (1 mark each)</div>
+              <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', marginBottom: '3px' }}>
+                4 MCQs
+              </div>
+              <div style={{ fontSize: '11px', color: '#64748b', lineHeight: 1.4 }}>
+                4 multiple-choice questions (1 mark each)
+              </div>
             </div>
 
+            {/* Box 3: 20 Minutes / Timed */}
             <div style={{
-              background: '#f8fafc',
-              border: '1px solid #e2e8f0',
-              borderRadius: '14px',
-              padding: '14px',
+              background: '#ffffff',
+              border: '1.5px solid #e2e8f0',
+              borderRadius: '18px',
+              padding: '16px 14px',
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.03)',
+              display: 'flex',
+              flexDirection: 'column',
+              minHeight: '125px',
+              textAlign: 'left',
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', color: '#065f46', fontWeight: 800, fontSize: '13px' }}>
-                <Clock size={16} /> {quizData?.duration_minutes || 5} Minutes
+              <div style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '10px',
+                background: '#ecfdf5',
+                color: '#065f46',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '10px',
+              }}>
+                <Clock size={18} />
               </div>
-              <div style={{ fontSize: '12px', color: '#64748b' }}>Live timed assessment with auto-submission</div>
+              <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', marginBottom: '3px' }}>
+                {quizData?.duration_minutes || 20} Minutes
+              </div>
+              <div style={{ fontSize: '11px', color: '#64748b', lineHeight: 1.4 }}>
+                Live timed assessment with auto-submission
+              </div>
             </div>
 
+            {/* Box 4: 1 Attempt */}
             <div style={{
-              background: '#f8fafc',
-              border: '1px solid #e2e8f0',
-              borderRadius: '14px',
-              padding: '14px',
+              background: '#ffffff',
+              border: '1.5px solid #e2e8f0',
+              borderRadius: '18px',
+              padding: '16px 14px',
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.03)',
+              display: 'flex',
+              flexDirection: 'column',
+              minHeight: '125px',
+              textAlign: 'left',
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', color: '#065f46', fontWeight: 800, fontSize: '13px' }}>
-                <Shield size={16} /> 1 Attempt
+              <div style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '10px',
+                background: '#ecfdf5',
+                color: '#065f46',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '10px',
+              }}>
+                <Shield size={18} />
               </div>
-              <div style={{ fontSize: '12px', color: '#64748b' }}>Single fair attempt verified per participant</div>
+              <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', marginBottom: '3px' }}>
+                1 Attempt
+              </div>
+              <div style={{ fontSize: '11px', color: '#64748b', lineHeight: 1.4 }}>
+                Single fair attempt verified per participant
+              </div>
             </div>
           </div>
 
@@ -407,7 +496,7 @@ export const ParticipantFlowWizard = ({
       )}
 
       {/* ========================================================================= */}
-      {/* STEP 2: PARTICIPATION DETAILS (Phone Number, Photo, Name) */}
+      {/* STEP 2: PARTICIPATION DETAILS (Phone Number, Photo, Name) - NEW MODEL */}
       {/* ========================================================================= */}
       {step === 2 && (
         <div className="wizard-card animate-fade-in">
@@ -417,23 +506,26 @@ export const ParticipantFlowWizard = ({
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
-              background: '#ecfdf5',
+              background: '#ffffff',
               color: '#065f46',
-              fontSize: '11px',
+              fontSize: '12px',
               fontWeight: 800,
-              padding: '4px 12px',
+              padding: '5px 14px',
               borderRadius: '999px',
-              marginBottom: '10px',
+              border: '1px solid #a7f3d0',
+              boxShadow: '0 2px 8px rgba(6, 95, 70, 0.08)',
+              marginBottom: '12px',
               textTransform: 'uppercase',
               letterSpacing: '0.05em',
             }}>
-              <User size={13} /> Participant Registration
+              <User size={14} color="#059669" />
+              <span>Participant Registration</span>
             </div>
-            <h2 style={{ fontSize: '26px', fontWeight: 900, color: '#0f172a', marginBottom: '6px' }}>
+            <h2 style={{ fontSize: 'clamp(24px, 6vw, 32px)', fontWeight: 900, color: '#0f172a', marginBottom: '6px', letterSpacing: '-0.02em' }}>
               Enter Your Information
             </h2>
-            <p style={{ fontSize: '14px', color: '#64748b' }}>
-              Please enter your phone number, upload your photo, and write your name to register.
+            <p style={{ fontSize: '14px', color: '#475569', maxWidth: '440px', margin: '0 auto' }}>
+              Please enter your phone number, photo, and name to register for today's competition.
             </p>
           </div>
 
@@ -443,7 +535,7 @@ export const ParticipantFlowWizard = ({
               border: '1px solid #fecaca',
               color: '#991b1b',
               padding: '12px 16px',
-              borderRadius: '12px',
+              borderRadius: '14px',
               fontSize: '13px',
               fontWeight: 600,
               display: 'flex',
@@ -457,241 +549,283 @@ export const ParticipantFlowWizard = ({
           )}
 
           <form onSubmit={handleDetailsSubmit}>
-            {/* 1. Photo / Avatar Upload Section */}
+            {/* Single Unified White Card Container (Avatar + Phone + Name) */}
+            <div style={{
+              background: '#ffffff',
+              borderRadius: '24px',
+              border: '1.5px solid #e2e8f0',
+              padding: '24px 20px 22px',
+              boxShadow: '0 8px 24px -4px rgba(6, 95, 70, 0.08)',
+              marginBottom: '20px',
+            }}>
+              {/* 1. Avatar Centerpiece */}
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                marginBottom: '22px',
+                paddingBottom: '20px',
+                borderBottom: '1px solid #f1f5f9',
+              }}>
+                <div style={{ fontSize: '13px', fontWeight: 800, color: '#1e293b', marginBottom: '12px' }}>
+                  Profile Photo <span style={{ color: '#64748b', fontWeight: 600 }}>(Optional / പ്രൊഫൈൽ ഫോട്ടോ)</span>
+                </div>
+
+                {/* Clickable Photo Preview Frame with Camera Badge */}
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  title="Click to upload/change photo"
+                  style={{
+                    position: 'relative',
+                    width: '92px',
+                    height: '92px',
+                    borderRadius: '50%',
+                    background: '#f1f5f9',
+                    border: '3px solid #059669',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    boxShadow: '0 8px 22px rgba(6, 95, 70, 0.2)',
+                    marginBottom: '12px',
+                    transition: 'transform 0.15s ease',
+                  }}
+                >
+                  {photo ? (
+                    <img
+                      src={photo}
+                      alt="Participant avatar"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+                    />
+                  ) : (
+                    <User size={46} color="#94a3b8" />
+                  )}
+
+                  {/* Floating Camera Action Badge */}
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '-2px',
+                    right: '-2px',
+                    width: '30px',
+                    height: '30px',
+                    borderRadius: '50%',
+                    background: '#065f46',
+                    color: '#ffffff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    border: '2px solid #ffffff',
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+                  }}>
+                    <Camera size={14} />
+                  </div>
+                </div>
+
+                {/* Hidden File Input */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="user"
+                  onChange={handlePhotoUpload}
+                  style={{ display: 'none' }}
+                />
+
+                {/* Upload Action Buttons */}
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '12px' }}>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    style={{
+                      background: '#ecfdf5',
+                      border: '1px solid #a7f3d0',
+                      color: '#065f46',
+                      padding: '7px 16px',
+                      borderRadius: '10px',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      minHeight: '38px',
+                    }}
+                  >
+                    <Camera size={15} />
+                    <span>{photo ? 'Change Photo' : 'Upload / Camera Photo'}</span>
+                  </button>
+
+                  {photo && (
+                    <button
+                      type="button"
+                      onClick={() => setPhoto('')}
+                      style={{
+                        background: '#ffffff',
+                        border: '1px solid #e2e8f0',
+                        color: '#64748b',
+                        padding: '7px 14px',
+                        borderRadius: '10px',
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        minHeight: '38px',
+                      }}
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+
+                {/* Quick Preset Avatars Picker */}
+                <div style={{ textAlign: 'center', width: '100%' }}>
+                  <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>
+                    Or pick a fun avatar:
+                  </span>
+                  <div className="wizard-avatar-grid">
+                    {AVATAR_PRESETS.map((preset, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setPhoto(preset)}
+                        style={{
+                          width: '36px',
+                          height: '36px',
+                          borderRadius: '50%',
+                          border: photo === preset ? '2.5px solid #059669' : '1.5px solid #e2e8f0',
+                          padding: 0,
+                          background: '#ffffff',
+                          cursor: 'pointer',
+                          overflow: 'hidden',
+                          transform: photo === preset ? 'scale(1.12)' : 'none',
+                          transition: 'all 0.15s ease',
+                          boxShadow: photo === preset ? '0 4px 12px rgba(6, 95, 70, 0.25)' : 'none',
+                        }}
+                      >
+                        <img src={preset} alt={`Avatar ${idx + 1}`} style={{ width: '100%', height: '100%' }} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. Mobile Phone Number Field */}
+              <div style={{ marginBottom: '18px' }}>
+                <label style={{
+                  display: 'block',
+                  fontSize: '13px',
+                  fontWeight: 800,
+                  color: '#1e293b',
+                  marginBottom: '6px',
+                }}>
+                  Mobile Phone Number (ഫോൺ നമ്പർ) <span style={{ color: '#dc2626' }}>*</span>
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <div style={{
+                    position: 'absolute',
+                    left: '16px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: '#065f46',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}>
+                    <Phone size={18} />
+                  </div>
+                  <input
+                    type="tel"
+                    inputMode="numeric"
+                    placeholder="e.g. 9876543210"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    onBlur={handlePhoneBlur}
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '14px 16px 14px 48px',
+                      fontSize: '16px',
+                      borderRadius: '14px',
+                      border: '1.5px solid #cbd5e1',
+                      background: '#f8fafc',
+                      outline: 'none',
+                      fontFamily: 'inherit',
+                      minHeight: '50px',
+                    }}
+                  />
+                </div>
+                {lookupLoading && (
+                  <div style={{ fontSize: '12px', color: '#059669', marginTop: '6px', fontWeight: 600 }}>
+                    🔍 Checking existing account...
+                  </div>
+                )}
+                {lookupMessage && !lookupLoading && (
+                  <div style={{ fontSize: '12px', color: '#059669', marginTop: '6px', fontWeight: 700 }}>
+                    ✓ {lookupMessage}
+                  </div>
+                )}
+              </div>
+
+              {/* 3. Full Name Field */}
+              <div>
+                <label style={{
+                  display: 'block',
+                  fontSize: '13px',
+                  fontWeight: 800,
+                  color: '#1e293b',
+                  marginBottom: '6px',
+                }}>
+                  Full Name (പേര്) <span style={{ color: '#dc2626' }}>*</span>
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <div style={{
+                    position: 'absolute',
+                    left: '16px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: '#065f46',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}>
+                    <User size={18} />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Enter your full name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '14px 16px 14px 48px',
+                      fontSize: '16px',
+                      borderRadius: '14px',
+                      border: '1.5px solid #cbd5e1',
+                      background: '#f8fafc',
+                      outline: 'none',
+                      fontFamily: 'inherit',
+                      minHeight: '50px',
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Step 2 Action Buttons: Centered Small Back + Full Width Next */}
             <div style={{
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              marginBottom: '28px',
-              padding: '18px',
-              background: '#f8fafc',
-              borderRadius: '18px',
-              border: '1px solid #e2e8f0',
+              gap: '10px',
+              width: '100%',
             }}>
-              <div style={{ fontSize: '13px', fontWeight: 800, color: '#334155', marginBottom: '12px' }}>
-                Profile Photo (Optional / പ്രൊഫൈൽ ഫോട്ടോ)
-              </div>
-
-              {/* Photo Preview Frame */}
-              <div style={{
-                position: 'relative',
-                width: '88px',
-                height: '88px',
-                borderRadius: '50%',
-                background: '#e2e8f0',
-                border: '3px solid #059669',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                overflow: 'hidden',
-                boxShadow: '0 4px 14px rgba(6, 95, 70, 0.15)',
-                marginBottom: '12px',
-              }}>
-                {photo ? (
-                  <img
-                    src={photo}
-                    alt="Participant avatar"
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  />
-                ) : (
-                  <User size={44} color="#94a3b8" />
-                )}
-              </div>
-
-              {/* Hidden File Input */}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                capture="user"
-                onChange={handlePhotoUpload}
-                style={{ display: 'none' }}
-              />
-
-              {/* Upload Buttons */}
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  style={{
-                    background: '#ecfdf5',
-                    border: '1px solid #a7f3d0',
-                    color: '#065f46',
-                    padding: '8px 16px',
-                    borderRadius: '8px',
-                    fontSize: '13px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    minHeight: '40px',
-                  }}
-                >
-                  <Camera size={15} />
-                  <span>{photo ? 'Change Photo' : 'Upload / Camera Photo'}</span>
-                </button>
-
-                {photo && (
-                  <button
-                    type="button"
-                    onClick={() => setPhoto('')}
-                    style={{
-                      background: '#ffffff',
-                      border: '1px solid #e2e8f0',
-                      color: '#64748b',
-                      padding: '8px 14px',
-                      borderRadius: '8px',
-                      fontSize: '13px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      minHeight: '40px',
-                    }}
-                  >
-                    Remove
-                  </button>
-                )}
-              </div>
-
-              {/* Quick Preset Avatars Picker */}
-              <div style={{ marginTop: '14px', textAlign: 'center', width: '100%' }}>
-                <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>
-                  Or pick a fun avatar:
-                </span>
-                <div className="wizard-avatar-grid">
-                  {AVATAR_PRESETS.map((preset, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => setPhoto(preset)}
-                      style={{
-                        width: '36px',
-                        height: '36px',
-                        borderRadius: '50%',
-                        border: photo === preset ? '2.5px solid #059669' : '1.5px solid #e2e8f0',
-                        padding: 0,
-                        background: '#ffffff',
-                        cursor: 'pointer',
-                        overflow: 'hidden',
-                        transform: photo === preset ? 'scale(1.1)' : 'none',
-                        transition: 'all 0.15s ease',
-                      }}
-                    >
-                      <img src={preset} alt={`Avatar ${idx + 1}`} style={{ width: '100%', height: '100%' }} />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* 2. Phone Number Field */}
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{
-                display: 'block',
-                fontSize: '13px',
-                fontWeight: 700,
-                color: '#334155',
-                marginBottom: '6px',
-              }}>
-                Mobile Phone Number (ഫോൺ നമ്പർ) <span style={{ color: '#dc2626' }}>*</span>
-              </label>
-              <div style={{ position: 'relative' }}>
-                <div style={{
-                  position: 'absolute',
-                  left: '14px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: '#065f46',
-                  display: 'flex',
-                  alignItems: 'center',
-                }}>
-                  <Phone size={18} />
-                </div>
-                <input
-                  type="tel"
-                  inputMode="numeric"
-                  placeholder="e.g. 9876543210"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  onBlur={handlePhoneBlur}
-                  required
-                  style={{
-                    width: '100%',
-                    padding: '13px 14px 13px 44px',
-                    fontSize: '16px',
-                    borderRadius: '12px',
-                    border: '1.5px solid #cbd5e1',
-                    outline: 'none',
-                    fontFamily: 'inherit',
-                    minHeight: '48px',
-                  }}
-                />
-              </div>
-              {lookupLoading && (
-                <div style={{ fontSize: '11px', color: '#059669', marginTop: '4px', fontWeight: 600 }}>
-                  🔍 Checking existing account...
-                </div>
-              )}
-              {lookupMessage && !lookupLoading && (
-                <div style={{ fontSize: '11px', color: '#059669', marginTop: '4px', fontWeight: 700 }}>
-                  ✓ {lookupMessage}
-                </div>
-              )}
-            </div>
-
-            {/* 3. Full Name Field */}
-            <div style={{ marginBottom: '28px' }}>
-              <label style={{
-                display: 'block',
-                fontSize: '13px',
-                fontWeight: 700,
-                color: '#334155',
-                marginBottom: '6px',
-              }}>
-                Full Name (പേര്) <span style={{ color: '#dc2626' }}>*</span>
-              </label>
-              <div style={{ position: 'relative' }}>
-                <div style={{
-                  position: 'absolute',
-                  left: '14px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: '#065f46',
-                  display: 'flex',
-                  alignItems: 'center',
-                }}>
-                  <User size={18} />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Enter your full name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  style={{
-                    width: '100%',
-                    padding: '13px 14px 13px 44px',
-                    fontSize: '16px',
-                    borderRadius: '12px',
-                    border: '1.5px solid #cbd5e1',
-                    outline: 'none',
-                    fontFamily: 'inherit',
-                    minHeight: '48px',
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Step 2 Action Buttons: Back + Next */}
-            <div className="wizard-btn-row">
+              {/* Top: Compact Centered Back Button */}
               <button
                 type="button"
                 onClick={() => setStep(1)}
                 style={{
-                  padding: '14px 20px',
+                  padding: '9px 24px',
                   borderRadius: '12px',
-                  background: '#f1f5f9',
-                  border: '1px solid #e2e8f0',
+                  background: '#ffffff',
+                  border: '1.5px solid #cbd5e1',
                   color: '#475569',
                   fontWeight: 700,
                   fontSize: '14px',
@@ -700,30 +834,32 @@ export const ParticipantFlowWizard = ({
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '6px',
-                  minHeight: '48px',
+                  minHeight: '40px',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
                 }}
               >
-                <ArrowLeft size={16} />
+                <ArrowLeft size={15} />
                 <span>Back</span>
               </button>
 
+              {/* Bottom: Full-Width Primary Next Button */}
               <button
                 type="submit"
                 disabled={loading}
                 className="btn-primary"
                 style={{
-                  flex: 1,
-                  padding: '14px 24px',
-                  borderRadius: '12px',
-                  fontSize: '15px',
+                  width: '100%',
+                  padding: '16px 24px',
+                  borderRadius: '16px',
+                  fontSize: '16px',
                   fontWeight: 800,
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '8px',
                   cursor: loading ? 'not-allowed' : 'pointer',
-                  boxShadow: '0 4px 14px rgba(6, 95, 70, 0.25)',
-                  minHeight: '48px',
+                  boxShadow: '0 8px 24px rgba(6, 95, 70, 0.28)',
+                  minHeight: '54px',
                 }}
               >
                 {loading ? (
@@ -741,7 +877,7 @@ export const ParticipantFlowWizard = ({
       )}
 
       {/* ========================================================================= */}
-      {/* STEP 3: RULES & GUIDELINES PAGE (Rules, Confirmation, Start Competition) */}
+      {/* STEP 3: RULES & GUIDELINES PAGE (Rules, Confirmation, Start Competition) - NEW MODEL */}
       {/* ========================================================================= */}
       {step === 3 && (
         <div className="wizard-card animate-fade-in">
@@ -751,23 +887,26 @@ export const ParticipantFlowWizard = ({
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
-              background: '#ecfdf5',
+              background: '#ffffff',
               color: '#065f46',
-              fontSize: '11px',
+              fontSize: '12px',
               fontWeight: 800,
-              padding: '4px 12px',
+              padding: '5px 14px',
               borderRadius: '999px',
-              marginBottom: '10px',
+              border: '1px solid #a7f3d0',
+              boxShadow: '0 2px 8px rgba(6, 95, 70, 0.08)',
+              marginBottom: '12px',
               textTransform: 'uppercase',
               letterSpacing: '0.05em',
             }}>
-              <Shield size={13} /> Competition Guidelines
+              <Shield size={14} color="#059669" />
+              <span>Competition Guidelines</span>
             </div>
-            <h2 style={{ fontSize: '26px', fontWeight: 900, color: '#0f172a', marginBottom: '6px' }}>
+            <h2 style={{ fontSize: 'clamp(24px, 6vw, 32px)', fontWeight: 900, color: '#0f172a', marginBottom: '6px', letterSpacing: '-0.02em' }}>
               Quiz Competition Rules (നിബന്ധനകൾ)
             </h2>
-            <p style={{ fontSize: '14px', color: '#64748b' }}>
-              Please read the rules carefully before clicking the start button.
+            <p style={{ fontSize: '14px', color: '#475569', maxWidth: '440px', margin: '0 auto' }}>
+              Please read the competition rules carefully before clicking start.
             </p>
           </div>
 
@@ -776,18 +915,19 @@ export const ParticipantFlowWizard = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            background: '#f8fafc',
+            background: '#ffffff',
             border: '1.5px solid #e2e8f0',
-            borderRadius: '16px',
-            padding: '12px 18px',
+            borderRadius: '18px',
+            padding: '14px 18px',
             marginBottom: '24px',
             gap: '12px',
             flexWrap: 'wrap',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.03)',
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: 0 }}>
               <div style={{
-                width: '42px',
-                height: '42px',
+                width: '46px',
+                height: '46px',
                 borderRadius: '50%',
                 background: '#065f46',
                 color: '#ffffff',
@@ -796,8 +936,9 @@ export const ParticipantFlowWizard = ({
                 justifyContent: 'center',
                 overflow: 'hidden',
                 fontWeight: 800,
-                fontSize: '16px',
-                border: '2px solid #059669',
+                fontSize: '17px',
+                border: '2.5px solid #059669',
+                boxShadow: '0 4px 12px rgba(6, 95, 70, 0.2)',
                 flexShrink: 0,
               }}>
                 {photo ? (
@@ -807,7 +948,7 @@ export const ParticipantFlowWizard = ({
                 )}
               </div>
               <div style={{ textAlign: 'left', minWidth: 0 }}>
-                <div style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: '15px', fontWeight: 800, color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {name}
                 </div>
                 <div style={{ fontSize: '12px', color: '#64748b' }}>
@@ -820,15 +961,15 @@ export const ParticipantFlowWizard = ({
               type="button"
               onClick={() => setStep(2)}
               style={{
-                background: '#ffffff',
-                border: '1px solid #cbd5e1',
-                padding: '6px 12px',
-                borderRadius: '8px',
+                background: '#ecfdf5',
+                border: '1px solid #a7f3d0',
+                padding: '7px 14px',
+                borderRadius: '10px',
                 fontSize: '12px',
                 fontWeight: 700,
                 color: '#065f46',
                 cursor: 'pointer',
-                minHeight: '36px',
+                minHeight: '38px',
               }}
             >
               Edit Details
@@ -840,14 +981,15 @@ export const ParticipantFlowWizard = ({
             <div style={{
               display: 'flex',
               gap: '14px',
-              padding: '14px',
-              background: '#f0fdf4',
-              borderRadius: '14px',
-              border: '1px solid #bbf7d0',
+              padding: '16px',
+              background: '#ffffff',
+              borderRadius: '16px',
+              border: '1.5px solid #bbf7d0',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.02)',
             }}>
               <div style={{
-                width: '28px',
-                height: '28px',
+                width: '30px',
+                height: '30px',
                 borderRadius: '8px',
                 background: '#059669',
                 color: '#ffffff',
@@ -855,16 +997,16 @@ export const ParticipantFlowWizard = ({
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontWeight: 800,
-                fontSize: '13px',
+                fontSize: '14px',
                 flexShrink: 0,
               }}>
                 1
               </div>
               <div>
-                <div style={{ fontSize: '14px', fontWeight: 800, color: '#065f46', marginBottom: '2px' }}>
+                <div style={{ fontSize: '14px', fontWeight: 800, color: '#065f46', marginBottom: '3px' }}>
                   Read the Factual Passage Carefully (ഖണ്ഡിക ശ്രദ്ധിച്ചു വായിക്കുക)
                 </div>
-                <div style={{ fontSize: '13px', color: '#334155', lineHeight: 1.5 }}>
+                <div style={{ fontSize: '12px', color: '#475569', lineHeight: 1.5 }}>
                   A reading passage containing all key facts will be presented at the top of the quiz. Read every sentence attentively.
                 </div>
               </div>
@@ -873,14 +1015,15 @@ export const ParticipantFlowWizard = ({
             <div style={{
               display: 'flex',
               gap: '14px',
-              padding: '14px',
-              background: '#f8fafc',
-              borderRadius: '14px',
-              border: '1px solid #e2e8f0',
+              padding: '16px',
+              background: '#ffffff',
+              borderRadius: '16px',
+              border: '1.5px solid #e2e8f0',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.02)',
             }}>
               <div style={{
-                width: '28px',
-                height: '28px',
+                width: '30px',
+                height: '30px',
                 borderRadius: '8px',
                 background: '#0f172a',
                 color: '#ffffff',
@@ -888,16 +1031,16 @@ export const ParticipantFlowWizard = ({
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontWeight: 800,
-                fontSize: '13px',
+                fontSize: '14px',
                 flexShrink: 0,
               }}>
                 2
               </div>
               <div>
-                <div style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a', marginBottom: '2px' }}>
+                <div style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a', marginBottom: '3px' }}>
                   Answer 4 Multiple Choice Questions (4 ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകുക)
                 </div>
-                <div style={{ fontSize: '13px', color: '#475569', lineHeight: 1.5 }}>
+                <div style={{ fontSize: '12px', color: '#475569', lineHeight: 1.5 }}>
                   Select one option (A, B, C, or D) for each question. You can change your choice anytime before submitting.
                 </div>
               </div>
@@ -906,14 +1049,15 @@ export const ParticipantFlowWizard = ({
             <div style={{
               display: 'flex',
               gap: '14px',
-              padding: '14px',
-              background: '#f8fafc',
-              borderRadius: '14px',
-              border: '1px solid #e2e8f0',
+              padding: '16px',
+              background: '#ffffff',
+              borderRadius: '16px',
+              border: '1.5px solid #e2e8f0',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.02)',
             }}>
               <div style={{
-                width: '28px',
-                height: '28px',
+                width: '30px',
+                height: '30px',
                 borderRadius: '8px',
                 background: '#0f172a',
                 color: '#ffffff',
@@ -921,16 +1065,16 @@ export const ParticipantFlowWizard = ({
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontWeight: 800,
-                fontSize: '13px',
+                fontSize: '14px',
                 flexShrink: 0,
               }}>
                 3
               </div>
               <div>
-                <div style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a', marginBottom: '2px' }}>
-                  Live Countdown Timer (സമയ പരിധി: {quizData?.duration_minutes || 5} മിനിറ്റ്)
+                <div style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a', marginBottom: '3px' }}>
+                  Live Countdown Timer (സമയ പരിധി: {quizData?.duration_minutes || 20} മിനിറ്റ്)
                 </div>
-                <div style={{ fontSize: '13px', color: '#475569', lineHeight: 1.5 }}>
+                <div style={{ fontSize: '12px', color: '#475569', lineHeight: 1.5 }}>
                   Keep an eye on the countdown clock. When the timer reaches 0:00, the quiz automatically locks and submits your chosen answers.
                 </div>
               </div>
@@ -939,14 +1083,15 @@ export const ParticipantFlowWizard = ({
             <div style={{
               display: 'flex',
               gap: '14px',
-              padding: '14px',
-              background: '#f8fafc',
-              borderRadius: '14px',
-              border: '1px solid #e2e8f0',
+              padding: '16px',
+              background: '#ffffff',
+              borderRadius: '16px',
+              border: '1.5px solid #e2e8f0',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.02)',
             }}>
               <div style={{
-                width: '28px',
-                height: '28px',
+                width: '30px',
+                height: '30px',
                 borderRadius: '8px',
                 background: '#0f172a',
                 color: '#ffffff',
@@ -954,16 +1099,16 @@ export const ParticipantFlowWizard = ({
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontWeight: 800,
-                fontSize: '13px',
+                fontSize: '14px',
                 flexShrink: 0,
               }}>
                 4
               </div>
               <div>
-                <div style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a', marginBottom: '2px' }}>
+                <div style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a', marginBottom: '3px' }}>
                   Single Attempt Policy (ഒരു അവസരം മാത്രം)
                 </div>
-                <div style={{ fontSize: '13px', color: '#475569', lineHeight: 1.5 }}>
+                <div style={{ fontSize: '12px', color: '#475569', lineHeight: 1.5 }}>
                   Each registered phone number gets exactly one attempt per daily quiz session. No retakes are allowed.
                 </div>
               </div>
@@ -974,12 +1119,13 @@ export const ParticipantFlowWizard = ({
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '10px',
+            gap: '12px',
             marginBottom: '28px',
-            padding: '12px 16px',
-            background: '#ecfdf5',
-            borderRadius: '12px',
-            border: '1px solid #a7f3d0',
+            padding: '14px 18px',
+            background: '#ffffff',
+            borderRadius: '16px',
+            border: '1.5px solid #a7f3d0',
+            boxShadow: '0 2px 10px rgba(6, 95, 70, 0.04)',
           }}>
             <input
               type="checkbox"
@@ -993,16 +1139,23 @@ export const ParticipantFlowWizard = ({
             </label>
           </div>
 
-          {/* Action Buttons: Back + Start Competition */}
-          <div className="wizard-btn-row">
+          {/* Action Buttons: Centered Small Back + Full Width Start Assessment */}
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '10px',
+            width: '100%',
+          }}>
+            {/* Top: Compact Centered Back Button */}
             <button
               type="button"
               onClick={() => setStep(2)}
               style={{
-                padding: '14px 20px',
+                padding: '9px 24px',
                 borderRadius: '12px',
-                background: '#f1f5f9',
-                border: '1px solid #e2e8f0',
+                background: '#ffffff',
+                border: '1.5px solid #cbd5e1',
                 color: '#475569',
                 fontWeight: 700,
                 fontSize: '14px',
@@ -1011,37 +1164,38 @@ export const ParticipantFlowWizard = ({
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '6px',
-                minHeight: '48px',
+                minHeight: '40px',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
               }}
             >
-              <ArrowLeft size={16} />
+              <ArrowLeft size={15} />
               <span>Back</span>
             </button>
 
+            {/* Bottom: Full-Width Primary Start Button */}
             <button
               type="button"
               onClick={handleStartCompetition}
               disabled={!agreeRules}
               className="btn-primary"
               style={{
-                flex: 1,
-                padding: '15px 24px',
-                borderRadius: '14px',
+                width: '100%',
+                padding: '16px 24px',
+                borderRadius: '16px',
                 fontSize: '16px',
-                fontWeight: 900,
+                fontWeight: 800,
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '10px',
-                cursor: agreeRules ? 'pointer' : 'not-allowed',
-                background: agreeRules ? 'linear-gradient(135deg, #059669 0%, #047857 100%)' : '#94a3b8',
-                boxShadow: agreeRules ? '0 6px 20px rgba(6, 95, 70, 0.35)' : 'none',
-                transition: 'all 0.2s ease',
-                minHeight: '48px',
+                gap: '8px',
+                cursor: !agreeRules ? 'not-allowed' : 'pointer',
+                opacity: !agreeRules ? 0.6 : 1,
+                boxShadow: '0 8px 24px rgba(6, 95, 70, 0.28)',
+                minHeight: '54px',
               }}
             >
-              <Play size={18} fill="#ffffff" />
-              <span>Start Competition (മത്സരം ആരംഭിക്കുക)</span>
+              <Play size={18} />
+              <span>Start Live Assessment</span>
             </button>
           </div>
         </div>

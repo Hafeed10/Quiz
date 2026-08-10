@@ -30,7 +30,8 @@ export const Header = ({ currentView, setCurrentView, openLoginModal, isQuizOpen
       <div style={{
         maxWidth: '1200px',
         margin: '0 auto',
-        padding: '14px 20px',
+        padding: '24px 20px 10px',
+        paddingTop: 'max(24px, calc(env(safe-area-inset-top, 0px) + 18px))',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -88,23 +89,24 @@ export const Header = ({ currentView, setCurrentView, openLoginModal, isQuizOpen
 
         {/* Right: Participant Info & Desktop Actions */}
         <div className="header-admin-controls" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          {/* Active Quiz Session Indicator */}
+          {/* Active Quiz Badge (Small & Compact) */}
           {isQuizOpen && (
             <span style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '6px',
+              gap: '4px',
               background: '#ecfdf5',
               border: '1px solid #a7f3d0',
               color: '#065f46',
               fontSize: '11px',
               fontWeight: 800,
-              padding: '4px 10px',
+              padding: '3px 8px',
               borderRadius: '999px',
-              marginRight: '6px',
+              whiteSpace: 'nowrap',
+              marginRight: '4px',
             }}>
-              <Clock size={13} color="#059669" />
-              Timed Quiz In Progress
+              <Clock size={11} color="#059669" />
+              <span>Timed Quiz</span>
             </span>
           )}
 
@@ -237,11 +239,24 @@ export const Header = ({ currentView, setCurrentView, openLoginModal, isQuizOpen
             !isQuizOpen && currentView !== 'admin' && (
               <button
                 onClick={openLoginModal}
-                className="btn-secondary"
-                style={{ padding: '7px 14px', fontSize: '13px' }}
+                title="Sign In"
+                aria-label="Sign In"
+                style={{
+                  width: '38px',
+                  height: '38px',
+                  borderRadius: '50%',
+                  background: '#ffffff',
+                  border: '1.5px solid #cbd5e1',
+                  color: '#065f46',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+                  transition: 'all 0.15s ease',
+                }}
               >
-                <User size={14} />
-                Sign in with Phone
+                <User size={18} />
               </button>
             )
           )}

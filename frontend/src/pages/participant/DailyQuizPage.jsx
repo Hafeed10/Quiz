@@ -200,15 +200,18 @@ export const DailyQuizPage = ({ quiz, onSubmitted, onQuizExpired }) => {
         </div>
 
         <div style={{
-          fontSize: '14px',
-          lineHeight: '1.7',
+          fontSize: '15px',
+          lineHeight: '1.75',
           color: '#334155',
           background: '#f8fafc',
-          padding: '16px',
-          borderRadius: '8px',
-          border: '1px solid #e2e8f0',
+          padding: '18px 20px',
+          borderRadius: '12px',
+          border: '1.5px solid #e2e8f0',
           whiteSpace: 'pre-line',
           letterSpacing: '0.01em',
+          textAlign: 'justify',
+          textJustify: 'inter-word',
+          hyphens: 'auto',
         }}>
           {quiz.passage_content}
         </div>

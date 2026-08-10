@@ -12,7 +12,7 @@
   --font-mono: 'JetBrains Mono', monospace;
 
   /* Surfaces & Backgrounds */
-  --bg-app: #f8fafc;
+  --bg-app: #e6f7f2;
   --bg-surface: #ffffff;
   --bg-surface-elevated: #ffffff;
   --bg-card: #ffffff;
@@ -89,10 +89,11 @@ html {
 
 body {
   font-family: var(--font-sans);
-  background-color: #f8fafc;
+  background-color: #e6f7f2;
   background-image:
-    radial-gradient(at 0% 0%, rgba(5, 150, 105, 0.05) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(6, 95, 70, 0.04) 0px, transparent 50%);
+    linear-gradient(180deg, #e3f6f0 0%, #edf9f5 50%, #e5f6f1 100%),
+    radial-gradient(at 0% 0%, rgba(5, 150, 105, 0.08) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(6, 95, 70, 0.06) 0px, transparent 50%);
   background-attachment: fixed;
   color: var(--text-primary);
   line-height: 1.6;
@@ -627,7 +628,7 @@ input:focus, textarea:focus, select:focus {
 
 .hero-glow-bg {
   position: relative;
-  background: radial-gradient(circle at 50% 12%, rgba(16, 185, 129, 0.12) 0%, rgba(248, 250, 252, 0) 70%);
+  background: radial-gradient(circle at 50% 12%, rgba(16, 185, 129, 0.16) 0%, rgba(230, 247, 242, 0) 70%);
 }
 
 .hero-badge-pill {
@@ -735,11 +736,11 @@ input:focus, textarea:focus, select:focus {
 }
 
 .wizard-card {
-  background: #ffffff;
-  border-radius: 24px;
-  border: 1.5px solid #e2e8f0;
-  padding: 36px 28px;
-  box-shadow: 0 12px 36px rgba(6, 95, 70, 0.08);
+  background: transparent;
+  border-radius: 0;
+  border: none;
+  padding: 10px 0;
+  box-shadow: none;
   width: 100%;
 }
 
@@ -766,9 +767,9 @@ input:focus, textarea:focus, select:focus {
 
 .wizard-grid-4 {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 12px;
-  margin-bottom: 32px;
+  margin-bottom: 28px;
   text-align: left;
 }
 
@@ -834,8 +835,8 @@ textarea {
   }
 
   .wizard-card {
-    padding: 24px 16px;
-    border-radius: 18px;
+    padding: 8px 0;
+    border-radius: 0;
   }
 
   .wizard-grid-4 {
@@ -923,8 +924,8 @@ textarea {
   }
 
   .wizard-card {
-    padding: 20px 12px;
-    border-radius: 16px;
+    padding: 6px 0;
+    border-radius: 0;
   }
 
   .wizard-step-pill {
@@ -933,17 +934,15 @@ textarea {
   }
 
   .wizard-grid-4 {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
     gap: 8px;
   }
 
   .wizard-btn-row {
-    flex-direction: column;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
     width: 100%;
-  }
-
-  .wizard-btn-row button {
-    width: 100% !important;
   }
 
   .option-badge {
