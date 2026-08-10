@@ -29,10 +29,20 @@ export const QRCodePortalPage = ({ quizData, onOpenWebsite }) => {
         <BookOpen size={44} />
       </div>
 
-      {/* 3. Hero Title: Quiz Bazar */}
-      <h1 className="hero-title">
-        Quiz <span style={{ color: '#059669' }}>Bazar</span>
-      </h1>
+      {/* 3. Hero Title: Ahlusuffa / Quiz Bazar */}
+      <div style={{ textAlign: 'center', marginBottom: '4px' }}>
+        <div style={{
+          fontSize: '13px',
+          fontWeight: 700,
+          color: '#64748b',
+          letterSpacing: '0.08em',
+          textTransform: 'uppercase',
+          marginBottom: '4px',
+        }}>Ahlusuffa</div>
+        <h1 className="hero-title">
+          Quiz <span style={{ color: '#059669' }}>Bazar</span>
+        </h1>
+      </div>
 
       {/* 4. Subtitle Tagline */}
       <p className="hero-subtitle">

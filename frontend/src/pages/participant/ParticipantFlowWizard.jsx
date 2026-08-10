@@ -257,15 +257,25 @@ export const ParticipantFlowWizard = ({
             }}>
               <BookOpen size={28} />
             </div>
-            <span style={{
-              fontSize: 'clamp(28px, 6.5vw, 38px)',
-              fontWeight: 900,
-              color: '#0f172a',
-              letterSpacing: '-0.03em',
-              lineHeight: 1,
-            }}>
-              Quiz <span style={{ color: '#059669' }}>Bazar</span>
-            </span>
+            <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.15 }}>
+              <span style={{
+                fontSize: 'clamp(11px, 2.5vw, 14px)',
+                fontWeight: 700,
+                color: '#64748b',
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                marginBottom: '2px',
+              }}>Ahlusuffa</span>
+              <span style={{
+                fontSize: 'clamp(28px, 6.5vw, 38px)',
+                fontWeight: 900,
+                color: '#0f172a',
+                letterSpacing: '-0.03em',
+                lineHeight: 1,
+              }}>
+                Quiz <span style={{ color: '#059669' }}>Bazar</span>
+              </span>
+            </div>
           </div>
 
           {/* Live Status Badge */}
