@@ -54,6 +54,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "https://quiz-phi-one-18.vercel.app",
@@ -98,10 +99,18 @@ WSGI_APPLICATION = 'quiz_backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+DB_PATH = Path('/tmp/db.sqlite3') if (os.environ.get('VERCEL') or Path('/tmp').exists()) else BASE_DIR / 'db.sqlite3'
+if not DB_PATH.exists() and (BASE_DIR / 'db.sqlite3').exists() and DB_PATH != (BASE_DIR / 'db.sqlite3'):
+    import shutil
+    try:
+        shutil.copy2(BASE_DIR / 'db.sqlite3', DB_PATH)
+    except Exception:
+        pass
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': DB_PATH if DB_PATH.exists() else BASE_DIR / 'db.sqlite3',
     }
 }
 
