@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { BookOpen, ArrowRight, Clock, Award, ShieldCheck, CheckCircle2 } from 'lucide-react';
-import logoHomeScreen from '../../assets/quiz-bazar-logo-4.png';
+import logoHomeScreen from '../../assets/quiz-bazar-logo.png';
 
 export const QRCodePortalPage = ({ quizData, onOpenWebsite }) => {
   const { participant } = useAuth();

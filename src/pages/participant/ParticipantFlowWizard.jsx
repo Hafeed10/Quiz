@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../api/client';
-import logoHomeScreen from '../../assets/quiz-bazar-logo-4.png';
+import logoHomeScreen from '../../assets/quiz-bazar-logo.png';
 import {
   BookOpen,
   Sparkles,
