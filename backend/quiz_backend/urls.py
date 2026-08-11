@@ -1,14 +1,14 @@
 from django.contrib import admin
-from django.urls import path, include, re_path
-from django.views.generic import TemplateView
-from django.conf import settings
-from django.conf.urls.static import static
+from django.urls import path, include
+from django.http import JsonResponse
+
+
+def health_check(request):
+    return JsonResponse({"status": "ok"})
+
 
 urlpatterns = [
+    path('', health_check),
     path('admin/', admin.site.urls),
     path('api/', include('quiz_api.urls')),
-    # Serve React frontend for all other routes (SPA catch-all)
-    re_path(r'^(?!api/|admin/|static/).*$', TemplateView.as_view(template_name='index.html')),
 ]
-
-urlpatterns += static(settings.STATIC_URL, document_root=settings.BASE_DIR.parent / 'frontend' / 'dist' / 'assets')
