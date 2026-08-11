@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { BookOpen, ArrowRight, Clock, Award, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import logoHomeScreen from '../../assets/quiz-bazar-logo-4.png';
 
 export const QRCodePortalPage = ({ quizData, onOpenWebsite }) => {
   const { participant } = useAuth();
@@ -24,28 +25,18 @@ export const QRCodePortalPage = ({ quizData, onOpenWebsite }) => {
         <span>Today's Quiz Competition is Live</span>
       </div>
 
-      {/* 2. Modern Hero Brand Logo Box */}
-      <div className="hero-logo-box">
-        <svg width="44" height="44" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path fillRule="evenodd" clipRule="evenodd" d="M22 65C22 51.1929 33.1929 40 47 40V28C26.5655 28 10 44.5655 10 65V65H22ZM58 65C58 51.1929 69.1929 40 83 40V28C62.5655 28 46 44.5655 46 65V65H58Z" fill="white"/>
-          <path d="M22 65H47V88H22V65Z" fill="white"/>
-          <path d="M58 65H83V88H58V65Z" fill="white"/>
-        </svg>
-      </div>
-
-      {/* 3. Hero Title: Ahlusuffa / Quiz Bazar */}
-      <div style={{ textAlign: 'center', marginBottom: '4px' }}>
-        <div style={{
-          fontSize: '13px',
-          fontWeight: 700,
-          color: '#64748b',
-          letterSpacing: '0.08em',
-          textTransform: 'uppercase',
-          marginBottom: '4px',
-        }}>AHLUSUFFA</div>
-        <h1 className="hero-title">
-          Quiz <span style={{ color: '#059669' }}>Bazar</span>
-        </h1>
+      {/* 2. Modern Hero Brand Logo Image */}
+      <div style={{ marginBottom: '16px', marginTop: '12px' }}>
+        <img
+          src={logoHomeScreen}
+          alt="Ahlussuffa Quiz Bazar"
+          style={{
+            maxHeight: '90px',
+            width: 'auto',
+            objectFit: 'contain',
+            filter: 'drop-shadow(0 10px 22px rgba(6, 95, 70, 0.18))',
+          }}
+        />
       </div>
 
       {/* 4. Subtitle Tagline */}

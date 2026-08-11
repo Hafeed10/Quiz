@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { BookOpen, ShieldCheck, LogOut, Lock, User, Clock, Phone } from 'lucide-react';
 
+import logoNavbar from '../assets/quiz-bazar-logo.png';
+
 export const Header = ({ currentView, setCurrentView, openLoginModal, isQuizOpen = false }) => {
   const { participant, logoutParticipant, isAdmin, logoutAdmin } = useAuth();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -46,47 +48,19 @@ export const Header = ({ currentView, setCurrentView, openLoginModal, isQuizOpen
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '12px',
               cursor: isQuizOpen ? 'default' : 'pointer',
             }}
           >
-            <div style={{
-              width: '42px',
-              height: '42px',
-              borderRadius: '13px',
-              background: 'linear-gradient(135deg, #10b981 0%, #059669 60%, #047857 100%)',
-              color: '#ffffff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 4px 14px rgba(5, 150, 105, 0.28)',
-              flexShrink: 0,
-            }}>
-              <svg width="26" height="26" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path fillRule="evenodd" clipRule="evenodd" d="M22 65C22 51.1929 33.1929 40 47 40V28C26.5655 28 10 44.5655 10 65V65H22ZM58 65C58 51.1929 69.1929 40 83 40V28C62.5655 28 46 44.5655 46 65V65H58Z" fill="white"/>
-                <path d="M22 65H47V88H22V65Z" fill="white"/>
-                <path d="M58 65H83V88H58V65Z" fill="white"/>
-              </svg>
-            </div>
-            <div style={{ lineHeight: 1.1 }}>
-              <div style={{
-                fontSize: '11px',
-                fontWeight: 800,
-                color: '#52606d',
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase'
-              }}>
-                AHLUSUFFA
-              </div>
-              <div style={{
-                fontSize: '21px',
-                fontWeight: 900,
-                color: '#0b1329',
-                letterSpacing: '-0.02em'
-              }}>
-                Quiz <span style={{ color: '#059669' }}>Bazar</span>
-              </div>
-            </div>
+            <img
+              src={logoNavbar}
+              alt="Ahlussuffa Quiz Bazar"
+              style={{
+                height: '46px',
+                maxHeight: '48px',
+                width: 'auto',
+                objectFit: 'contain',
+              }}
+            />
           </div>
 
           {/* Admin Badge if on Admin view */}

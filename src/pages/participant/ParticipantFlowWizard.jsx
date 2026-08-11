@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../api/client';
+import logoHomeScreen from '../../assets/quiz-bazar-logo-4.png';
 import {
   BookOpen,
   Sparkles,
@@ -239,48 +240,20 @@ export const ParticipantFlowWizard = ({
           <div style={{
             display: 'inline-flex',
             alignItems: 'center',
-            gap: '14px',
-            background: 'transparent',
+            justifyContent: 'center',
             padding: '4px 0',
             marginBottom: '20px',
           }}>
-            <div style={{
-              width: '52px',
-              height: '52px',
-              borderRadius: '14px',
-              background: 'linear-gradient(135deg, #065f46 0%, #059669 100%)',
-              color: '#ffffff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 8px 20px rgba(6, 95, 70, 0.25)',
-              flexShrink: 0,
-            }}>
-              <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path fillRule="evenodd" clipRule="evenodd" d="M22 65C22 51.1929 33.1929 40 47 40V28C26.5655 28 10 44.5655 10 65V65H22ZM58 65C58 51.1929 69.1929 40 83 40V28C62.5655 28 46 44.5655 46 65V65H58Z" fill="white"/>
-                <path d="M22 65H47V88H22V65Z" fill="white"/>
-                <path d="M58 65H83V88H58V65Z" fill="white"/>
-              </svg>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.15 }}>
-              <span style={{
-                fontSize: 'clamp(11px, 2.5vw, 14px)',
-                fontWeight: 700,
-                color: '#64748b',
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-                marginBottom: '2px',
-              }}>AHLUSUFFA</span>
-              <span style={{
-                fontSize: 'clamp(28px, 6.5vw, 38px)',
-                fontWeight: 900,
-                color: '#0f172a',
-                letterSpacing: '-0.03em',
-                lineHeight: 1,
-              }}>
-                Quiz <span style={{ color: '#059669' }}>Bazar</span>
-              </span>
-            </div>
+            <img
+              src={logoHomeScreen}
+              alt="Ahlussuffa Quiz Bazar"
+              style={{
+                maxHeight: '75px',
+                width: 'auto',
+                objectFit: 'contain',
+                filter: 'drop-shadow(0 8px 18px rgba(6, 95, 70, 0.15))',
+              }}
+            />
           </div>
 
           {/* Live Status Badge */}
