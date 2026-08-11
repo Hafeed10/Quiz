@@ -1,5 +1,5 @@
 // In production (Netlify), VITE_API_URL must be set to your Django backend URL
-// e.g. https://your-backend.railway.app/api
+
 // In local dev, falls back to the Vite proxy at /api
 const BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
