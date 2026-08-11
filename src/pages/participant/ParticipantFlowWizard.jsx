@@ -266,7 +266,7 @@ export const ParticipantFlowWizard = ({
                 letterSpacing: '0.08em',
                 textTransform: 'uppercase',
                 marginBottom: '2px',
-              }}>Ahlussuffa</span>
+              }}>AHLUSUFFA</span>
               <span style={{
                 fontSize: 'clamp(28px, 6.5vw, 38px)',
                 fontWeight: 900,
