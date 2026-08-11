@@ -54,10 +54,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
-    "https://al-anvar.netlify.app",
+    "https://quiz-phi-one-18.vercel.app/",
     "http://localhost:5173",
     "http://localhost:5174",
     "http://127.0.0.1:5173",
@@ -65,6 +64,10 @@ CORS_ALLOWED_ORIGINS = [
     "http://192.168.1.201:5173",
     "http://192.168.1.201:5174",
     "http://192.168.1.201:8000",
+]
+# Allow all Vercel preview & production deployments
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://.*\.vercel\.app$",
 ]
 
 
