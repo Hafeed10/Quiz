@@ -62,7 +62,11 @@ export const Header = ({ currentView, setCurrentView, openLoginModal, isQuizOpen
               boxShadow: '0 4px 14px rgba(5, 150, 105, 0.28)',
               flexShrink: 0,
             }}>
-              <BookOpen size={22} strokeWidth={2.3} color="#ffffff" />
+              <svg width="26" height="26" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fillRule="evenodd" clipRule="evenodd" d="M22 65C22 51.1929 33.1929 40 47 40V28C26.5655 28 10 44.5655 10 65V65H22ZM58 65C58 51.1929 69.1929 40 83 40V28C62.5655 28 46 44.5655 46 65V65H58Z" fill="white"/>
+                <path d="M22 65H47V88H22V65Z" fill="white"/>
+                <path d="M58 65H83V88H58V65Z" fill="white"/>
+              </svg>
             </div>
             <div style={{ lineHeight: 1.1 }}>
               <div style={{

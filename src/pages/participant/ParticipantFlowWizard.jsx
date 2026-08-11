@@ -256,7 +256,11 @@ export const ParticipantFlowWizard = ({
               boxShadow: '0 8px 20px rgba(6, 95, 70, 0.25)',
               flexShrink: 0,
             }}>
-              <BookOpen size={28} />
+              <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fillRule="evenodd" clipRule="evenodd" d="M22 65C22 51.1929 33.1929 40 47 40V28C26.5655 28 10 44.5655 10 65V65H22ZM58 65C58 51.1929 69.1929 40 83 40V28C62.5655 28 46 44.5655 46 65V65H58Z" fill="white"/>
+                <path d="M22 65H47V88H22V65Z" fill="white"/>
+                <path d="M58 65H83V88H58V65Z" fill="white"/>
+              </svg>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.15 }}>
               <span style={{
