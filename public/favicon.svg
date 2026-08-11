@@ -1,14 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
   <defs>
     <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#065f46"/>
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="50%" stop-color="#059669"/>
       <stop offset="100%" stop-color="#047857"/>
     </linearGradient>
   </defs>
-  <rect width="128" height="128" rx="28" fill="url(#brandGrad)"/>
-  <!-- Open Book Icon in crisp white -->
-  <path d="M28 40 C28 40 44 36 64 46 C84 36 100 40 100 40 L100 90 C100 90 84 86 64 96 C44 86 28 90 28 90 Z" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-  <line x1="64" y1="46" x2="64" y2="96" stroke="#ffffff" stroke-width="8" stroke-linecap="round"/>
-  <!-- Quiz Sparkle / Bookmark Accent -->
-  <circle cx="64" cy="30" r="6" fill="#34d399"/>
+  <rect width="128" height="128" rx="36" fill="url(#brandGrad)"/>
+  <!-- Quote Mark Symbol in crisp white -->
+  <g transform="translate(14, 14) scale(1)">
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M22 65C22 51.1929 33.1929 40 47 40V28C26.5655 28 10 44.5655 10 65V65H22ZM58 65C58 51.1929 69.1929 40 83 40V28C62.5655 28 46 44.5655 46 65V65H58Z" fill="#ffffff"/>
+    <path d="M22 65H47V88H22V65Z" fill="#ffffff"/>
+    <path d="M58 65H83V88H58V65Z" fill="#ffffff"/>
+  </g>
 </svg>
