@@ -316,8 +316,10 @@ class AdminQuizViewSet(viewsets.ModelViewSet):
 
     def perform_destroy(self, instance):
         quiz_id = instance.id
+        Attempt.objects.filter(quiz=instance).delete()
         instance.delete()
-        delete_quiz_from_mongo(quiz_id)
+        from .mongo_service import delete_quiz_from_mongo_sync
+        delete_quiz_from_mongo_sync(quiz_id)
 
     @action(detail=True, methods=['post'])
     def publish(self, request, pk=None):
@@ -514,7 +516,7 @@ def admin_cumulative_participants(request):
 @api_view(['DELETE'])
 def admin_delete_participant(request, participant_id):
     """
-    Delete a participant and all their quiz attempts.
+    Delete a participant and all their quiz attempts permanently.
     DELETE /api/admin/participants/<participant_id>/delete/
     """
     try:
@@ -525,16 +527,34 @@ def admin_delete_participant(request, participant_id):
     Attempt.objects.filter(participant=participant).delete()
     participant.delete()
 
+    from .mongo_service import delete_participant_from_mongo_sync
+    delete_participant_from_mongo_sync(participant_id)
+
+    return Response({"success": True, "message": "Participant and database records deleted successfully."}, status=status.HTTP_200_OK)
+
+
+@api_view(['DELETE'])
+def admin_delete_attempt(request, attempt_id):
+    """
+    Delete a single attempt permanently from database.
+    DELETE /api/admin/attempts/<attempt_id>/delete/
+    """
+    try:
+        attempt = Attempt.objects.get(id=attempt_id)
+    except Attempt.DoesNotExist:
+        return Response({"error": "Attempt not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    attempt.delete()
+
     try:
         from .mongo_service import get_mongo_db
         db = get_mongo_db()
         if db is not None:
-            db.participants.delete_one({"participant_id": participant_id})
-            db.attempts.delete_many({"participant_id": participant_id})
+            db.attempts.delete_one({"attempt_id": attempt_id})
     except Exception as e:
-        print(f"[MongoDB] Failed to delete participant {participant_id}: {e}")
+        print(f"[MongoDB] Failed to delete attempt {attempt_id}: {e}")
 
-    return Response({"success": True, "message": "Participant deleted successfully."}, status=status.HTTP_200_OK)
+    return Response({"success": True, "message": "Attempt deleted successfully."}, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])

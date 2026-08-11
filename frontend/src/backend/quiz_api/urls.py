@@ -14,6 +14,7 @@ from .views import (
     admin_quiz_winner,
     admin_quiz_results_analytics,
     admin_delete_participant,
+    admin_delete_attempt,
 )
 
 router = DefaultRouter()
@@ -34,6 +35,7 @@ urlpatterns = [
     path('admin/participants/cumulative/', admin_cumulative_participants, name='admin-cumulative-participants'),
     path('admin/participants/<int:participant_id>/delete/', admin_delete_participant, name='admin-delete-participant'),
     path('admin/participants/', admin_participants_list, name='admin-participants-list'),
+    path('admin/attempts/<int:attempt_id>/delete/', admin_delete_attempt, name='admin-delete-attempt'),
     path('admin/attempts/<int:attempt_id>/', admin_attempt_detail, name='admin-attempt-detail'),
     path('admin/quizzes/<int:quiz_id>/winner/', admin_quiz_winner, name='admin-quiz-winner'),
     path('admin/quizzes/<int:quiz_id>/results/', admin_quiz_results_analytics, name='admin-quiz-results-analytics'),

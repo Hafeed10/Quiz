@@ -140,19 +140,26 @@ def sync_quiz_to_mongo(quiz):
     t = threading.Thread(target=_sync_quiz_worker, args=(quiz_id,), daemon=True)
     t.start()
 
-def _delete_quiz_worker(quiz_id):
+def delete_quiz_from_mongo_sync(quiz_id):
     try:
         db = get_mongo_db()
-        if db is None:
-            return
-        db.quizzes.delete_one({"quiz_id": quiz_id})
-        db.attempts.delete_many({"quiz_id": quiz_id})
+        if db is not None:
+            db.quizzes.delete_one({"quiz_id": quiz_id})
+            db.attempts.delete_many({"quiz_id": quiz_id})
     except Exception as e:
         print(f"[MongoDB] Failed to delete quiz {quiz_id}: {e}")
 
 def delete_quiz_from_mongo(quiz_id):
-    t = threading.Thread(target=_delete_quiz_worker, args=(quiz_id,), daemon=True)
-    t.start()
+    delete_quiz_from_mongo_sync(quiz_id)
+
+def delete_participant_from_mongo_sync(participant_id):
+    try:
+        db = get_mongo_db()
+        if db is not None:
+            db.participants.delete_one({"participant_id": participant_id})
+            db.attempts.delete_many({"participant_id": participant_id})
+    except Exception as e:
+        print(f"[MongoDB] Failed to delete participant {participant_id}: {e}")
 
 def _sync_attempt_worker(attempt_id):
     try:

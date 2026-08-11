@@ -83,4 +83,6 @@ export const api = {
     client.get(`/admin/quizzes/${quizId}/results/`),
   deleteAdminParticipant: (id) =>
     client.delete(`/admin/participants/${id}/delete/`),
+  deleteAdminAttempt: (id) =>
+    client.delete(`/admin/attempts/${id}/delete/`),
 };
