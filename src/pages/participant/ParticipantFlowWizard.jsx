@@ -53,7 +53,8 @@ export const ParticipantFlowWizard = ({
   const [lookupLoading, setLookupLoading] = useState(false);
   const [lookupMessage, setLookupMessage] = useState(null);
   const [error, setError] = useState('');
-  const fileInputRef = useRef(null);
+  const galleryInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
 
   // Sync state if participant context updates
   useEffect(() => {
@@ -631,9 +632,16 @@ export const ParticipantFlowWizard = ({
                   </div>
                 </div>
 
-                {/* Hidden File Input */}
+                {/* Hidden File Inputs: Gallery & Camera */}
                 <input
-                  ref={fileInputRef}
+                  ref={galleryInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoUpload}
+                  style={{ display: 'none' }}
+                />
+                <input
+                  ref={cameraInputRef}
                   type="file"
                   accept="image/*"
                   capture="user"
@@ -641,11 +649,11 @@ export const ParticipantFlowWizard = ({
                   style={{ display: 'none' }}
                 />
 
-                {/* Upload Action Buttons */}
+                {/* Upload Action Buttons: Gallery, Camera, Remove */}
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '12px' }}>
                   <button
                     type="button"
-                    onClick={() => fileInputRef.current?.click()}
+                    onClick={() => galleryInputRef.current?.click()}
                     style={{
                       background: '#ecfdf5',
                       border: '1px solid #a7f3d0',
@@ -661,8 +669,30 @@ export const ParticipantFlowWizard = ({
                       minHeight: '38px',
                     }}
                   >
+                    <Upload size={15} />
+                    <span>Upload from Gallery</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => cameraInputRef.current?.click()}
+                    style={{
+                      background: '#f0fdf4',
+                      border: '1px solid #bbf7d0',
+                      color: '#166534',
+                      padding: '7px 16px',
+                      borderRadius: '10px',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      minHeight: '38px',
+                    }}
+                  >
                     <Camera size={15} />
-                    <span>{photo ? 'Change Photo' : 'Upload / Camera Photo'}</span>
+                    <span>Camera</span>
                   </button>
 
                   {photo && (
