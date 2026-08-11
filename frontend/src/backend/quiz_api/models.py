@@ -49,8 +49,8 @@ class Quiz(models.Model):
     title = models.CharField(max_length=255, default="Daily Reading Quiz")
     quiz_date = models.DateField(db_index=True)
     start_time = models.TimeField(default=time(10, 0))
-    end_time = models.TimeField(default=time(10, 20))
-    duration_minutes = models.PositiveIntegerField(default=20, help_text="Duration in minutes")
+    end_time = models.TimeField(default=time(16, 0))
+    duration_minutes = models.PositiveIntegerField(default=360, help_text="Duration in minutes")
     
     passage_title = models.CharField(max_length=255, blank=True, default="Reading Passage")
     passage_content = models.TextField(help_text="The main paragraph/passage for the daily quiz")

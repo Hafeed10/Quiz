@@ -18,7 +18,7 @@ def get_next_quiz_info():
     next_quiz = Quiz.objects.filter(quiz_date__gt=today).exclude(status='DRAFT').order_by('quiz_date', 'start_time').first()
     if next_quiz:
         start_str = next_quiz.start_time.strftime('%I:%M %p') if next_quiz.start_time else "10:00 AM"
-        end_str = next_quiz.end_time.strftime('%I:%M %p') if next_quiz.end_time else "10:20 AM"
+        end_str = next_quiz.end_time.strftime('%I:%M %p') if next_quiz.end_time else "04:00 PM"
         return {
             "quiz_id": next_quiz.id,
             "title": next_quiz.title,
@@ -26,7 +26,7 @@ def get_next_quiz_info():
             "date_formatted": next_quiz.quiz_date.strftime('%b %d, %Y'),
             "time": start_str,
             "end_time": end_str,
-            "duration_minutes": next_quiz.duration_minutes or 20,
+            "duration_minutes": next_quiz.duration_minutes or 360,
             "window_text": f"{start_str} to {end_str}",
         }
     tomorrow = today + timedelta(days=1)
@@ -36,9 +36,9 @@ def get_next_quiz_info():
         "date": tomorrow.strftime('%Y-%m-%d'),
         "date_formatted": tomorrow.strftime('%b %d, %Y'),
         "time": "10:00 AM",
-        "end_time": "10:20 AM",
-        "duration_minutes": 20,
-        "window_text": "10:00 AM to 10:20 AM",
+        "end_time": "04:00 PM",
+        "duration_minutes": 360,
+        "window_text": "10:00 AM to 04:00 PM",
     }
 
 # ==========================================

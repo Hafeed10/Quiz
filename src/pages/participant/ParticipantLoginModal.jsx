@@ -457,7 +457,7 @@ export const ParticipantLoginModal = ({ isOpen, onClose, onLoginSuccess }) => {
                     {nextQuiz?.date_formatted || 'Tomorrow'}
                   </div>
                   <div style={{ fontSize: '11px', color: '#1e40af' }}>
-                    {nextQuiz?.window_text || '10:00 AM – 10:20 AM'}
+                    {nextQuiz?.window_text || '10:00 AM – 4:00 PM'}
                   </div>
                 </div>
               </div>
