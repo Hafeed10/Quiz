@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../api/client';
 import { ParticipantDailyHistoryModal } from './ParticipantDailyHistoryModal';
 import {
-  Trophy, Search, RefreshCw, Eye, EyeOff, Copy, Check,
+  Trophy, Search, RefreshCw, Eye, EyeOff, Copy, Check, Trash2,
   Award, Calendar, Users, ChevronRight, ArrowUpDown, Shield, Sparkles, TrendingUp
 } from 'lucide-react';
 
@@ -43,6 +43,17 @@ export const CumulativeScoresPortal = () => {
     navigator.clipboard.writeText(phone);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleDeleteParticipant = async (participantId, name) => {
+    if (window.confirm(`Are you sure you want to delete participant "${name}" and all their quiz attempts? This cannot be undone.`)) {
+      try {
+        await api.deleteAdminParticipant(participantId);
+        loadLeaderboard();
+      } catch (err) {
+        alert('Failed to delete participant. Please try again.');
+      }
+    }
   };
 
   const participants = data.participants || [];
@@ -460,36 +471,66 @@ export const CumulativeScoresPortal = () => {
                       </div>
                     </td>
 
-                    {/* Action: View Daily Scorecard */}
-                    <td style={{ padding: '16px 18px', textAlign: 'right' }}>
-                      <button
-                        onClick={() => setSelectedParticipant(p)}
-                        style={{
-                          background: '#ecfdf5',
-                          border: '1px solid #a7f3d0',
-                          borderRadius: '8px',
-                          color: '#065f46',
-                          fontWeight: 800,
-                          fontSize: '12px',
-                          padding: '7px 14px',
-                          cursor: 'pointer',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          transition: 'all 0.15s ease',
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.background = '#065f46';
-                          e.currentTarget.style.color = '#ffffff';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = '#ecfdf5';
-                          e.currentTarget.style.color = '#065f46';
-                        }}
-                      >
-                        <span>Daily Scorecard</span>
-                        <ChevronRight size={14} />
-                      </button>
+                    {/* Actions: View Daily Scorecard & Delete */}
+                    <td style={{ padding: '16px 18px', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                        <button
+                          onClick={() => setSelectedParticipant(p)}
+                          style={{
+                            background: '#ecfdf5',
+                            border: '1px solid #a7f3d0',
+                            borderRadius: '8px',
+                            color: '#065f46',
+                            fontWeight: 800,
+                            fontSize: '12px',
+                            padding: '7px 14px',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            transition: 'all 0.15s ease',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = '#065f46';
+                            e.currentTarget.style.color = '#ffffff';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = '#ecfdf5';
+                            e.currentTarget.style.color = '#065f46';
+                          }}
+                        >
+                          <span>Daily Scorecard</span>
+                          <ChevronRight size={14} />
+                        </button>
+
+                        <button
+                          onClick={() => handleDeleteParticipant(p.id, p.name)}
+                          title={`Delete ${p.name}`}
+                          aria-label={`Delete ${p.name}`}
+                          style={{
+                            background: '#fef2f2',
+                            border: '1px solid #fecaca',
+                            borderRadius: '8px',
+                            color: '#dc2626',
+                            padding: '7px 10px',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'all 0.15s ease',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = '#dc2626';
+                            e.currentTarget.style.color = '#ffffff';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = '#fef2f2';
+                            e.currentTarget.style.color = '#dc2626';
+                          }}
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );

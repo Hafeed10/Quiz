@@ -511,6 +511,32 @@ def admin_cumulative_participants(request):
     })
 
 
+@api_view(['DELETE'])
+def admin_delete_participant(request, participant_id):
+    """
+    Delete a participant and all their quiz attempts.
+    DELETE /api/admin/participants/<participant_id>/delete/
+    """
+    try:
+        participant = Participant.objects.get(id=participant_id)
+    except Participant.DoesNotExist:
+        return Response({"error": "Participant not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    Attempt.objects.filter(participant=participant).delete()
+    participant.delete()
+
+    try:
+        from .mongo_service import get_mongo_db
+        db = get_mongo_db()
+        if db is not None:
+            db.participants.delete_one({"participant_id": participant_id})
+            db.attempts.delete_many({"participant_id": participant_id})
+    except Exception as e:
+        print(f"[MongoDB] Failed to delete participant {participant_id}: {e}")
+
+    return Response({"success": True, "message": "Participant deleted successfully."}, status=status.HTTP_200_OK)
+
+
 @api_view(['GET'])
 def admin_attempt_detail(request, attempt_id):
     """

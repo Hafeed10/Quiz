@@ -81,4 +81,6 @@ export const api = {
     client.get(`/admin/quizzes/${quizId}/winner/`),
   getAdminQuizResults: (quizId) =>
     client.get(`/admin/quizzes/${quizId}/results/`),
+  deleteAdminParticipant: (id) =>
+    client.delete(`/admin/participants/${id}/delete/`),
 };
