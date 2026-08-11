@@ -67,9 +67,9 @@ export const Header = ({ currentView, setCurrentView, openLoginModal, isQuizOpen
             }}>
               <BookOpen size={19} />
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.15, alignItems: 'flex-start' }}>
-              <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Ahlusuffa</span>
-              <span style={{ fontSize: '17px', fontWeight: 800, color: '#0f172a' }}>Quiz <span style={{ color: '#059669' }}>Bazar</span></span>
+            <div style={{ lineHeight: 1.15 }}>
+              <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Ahlusuffa</div>
+              <div style={{ fontSize: '17px', fontWeight: 800, color: '#0f172a' }}>Quiz <span style={{ color: '#059669' }}>Bazar</span></div>
             </div>
           </div>
 

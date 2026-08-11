@@ -2,7 +2,7 @@ services:
   - type: web
     name: quiz-backend
     runtime: python
-    buildCommand: pip install -r backend/requirements.txt && cd backend && python manage.py migrate
+    buildCommand: pip install -r requirements.txt
     startCommand: gunicorn --chdir backend quiz_backend.wsgi:application --bind 0.0.0.0:$PORT --workers 2
     envVars:
       - key: PYTHON_VERSION
