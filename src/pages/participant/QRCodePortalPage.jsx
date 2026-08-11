@@ -38,7 +38,7 @@ export const QRCodePortalPage = ({ quizData, onOpenWebsite }) => {
           letterSpacing: '0.08em',
           textTransform: 'uppercase',
           marginBottom: '4px',
-        }}>Ahlusuffa</div>
+        }}>Ahlussuffa</div>
         <h1 className="hero-title">
           Quiz <span style={{ color: '#059669' }}>Bazar</span>
         </h1>

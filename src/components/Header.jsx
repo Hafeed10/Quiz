@@ -46,30 +46,30 @@ export const Header = ({ currentView, setCurrentView, openLoginModal, isQuizOpen
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '10px',
-              fontSize: '19px',
-              fontWeight: 800,
-              color: '#0f172a',
+              gap: '12px',
               cursor: isQuizOpen ? 'default' : 'pointer',
             }}
           >
             <div style={{
-              width: '34px',
-              height: '34px',
-              borderRadius: '8px',
-              background: '#065f46',
+              width: '44px',
+              height: '44px',
+              borderRadius: '14px',
+              background: 'linear-gradient(135deg, #34d399 0%, #059669 50%, #047857 100%)',
               color: '#ffffff',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 2px 8px rgba(6, 95, 70, 0.3)',
+              boxShadow: '0 4px 14px rgba(5, 150, 105, 0.28)',
               flexShrink: 0,
             }}>
-              <BookOpen size={19} />
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 7C10 5.34315 8.65685 4 7 4C5.34315 4 4 5.34315 4 7C4 8.65685 5.34315 10 7 10H10V17C10 18.6569 8.65685 20 7 20" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M20 7C20 5.34315 18.6569 4 17 4C15.3431 4 14 5.34315 14 7C14 8.65685 15.3431 10 17 10H20V17C20 18.6569 18.6569 20 17 20" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
             </div>
-            <div style={{ lineHeight: 1.15 }}>
-              <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Ahlusuffa</div>
-              <div style={{ fontSize: '17px', fontWeight: 800, color: '#0f172a' }}>Quiz <span style={{ color: '#059669' }}>Bazar</span></div>
+            <div style={{ lineHeight: 1.08 }}>
+              <div style={{ fontSize: '15px', fontWeight: 700, color: '#334155', letterSpacing: '-0.01em' }}>Ahlussuffa</div>
+              <div style={{ fontSize: '21px', fontWeight: 900, color: '#000000', letterSpacing: '-0.02em' }}>Quiz <span style={{ color: '#059669' }}>Bazar</span></div>
             </div>
           </div>
 
