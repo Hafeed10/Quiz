@@ -3,7 +3,7 @@ services:
     name: quiz-backend
     runtime: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn --chdir backend quiz_backend.wsgi:application --bind 0.0.0.0:$PORT --workers 2
+    startCommand: cd backend && DJANGO_SETTINGS_MODULE=quiz_backend.settings gunicorn quiz_backend.wsgi:application --bind 0.0.0.0:$PORT --workers 2
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.0
