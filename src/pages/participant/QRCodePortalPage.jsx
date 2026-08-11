@@ -31,10 +31,11 @@ export const QRCodePortalPage = ({ quizData, onOpenWebsite }) => {
           src={logoHomeScreen}
           alt="Ahlussuffa Quiz Bazar"
           style={{
-            maxHeight: '90px',
-            width: 'auto',
+            height: 'clamp(120px, 26vw, 175px)',
+            maxWidth: '340px',
+            width: '100%',
             objectFit: 'contain',
-            filter: 'drop-shadow(0 10px 22px rgba(6, 95, 70, 0.18))',
+            filter: 'drop-shadow(0 12px 28px rgba(6, 95, 70, 0.22))',
           }}
         />
       </div>

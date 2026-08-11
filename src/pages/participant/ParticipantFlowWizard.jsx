@@ -248,10 +248,11 @@ export const ParticipantFlowWizard = ({
               src={logoHomeScreen}
               alt="Ahlussuffa Quiz Bazar"
               style={{
-                maxHeight: '75px',
-                width: 'auto',
+                height: 'clamp(110px, 24vw, 160px)',
+                maxWidth: '320px',
+                width: '100%',
                 objectFit: 'contain',
-                filter: 'drop-shadow(0 8px 18px rgba(6, 95, 70, 0.15))',
+                filter: 'drop-shadow(0 10px 24px rgba(6, 95, 70, 0.18))',
               }}
             />
           </div>
