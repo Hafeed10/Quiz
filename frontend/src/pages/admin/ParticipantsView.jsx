@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../api/client';
 import { AnswerReviewModal } from './AnswerReviewModal';
-import { Eye, EyeOff, Search, RefreshCw, Copy, Check } from 'lucide-react';
+import { Eye, EyeOff, Search, RefreshCw, Copy, Check, Trash2 } from 'lucide-react';
 
 export const ParticipantsView = ({ quizId }) => {
   const [data, setData] = useState({ attempts: [], quiz_title: '' });
@@ -21,6 +21,21 @@ export const ParticipantsView = ({ quizId }) => {
       console.error('Failed to load participants', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteAttempt = async (attemptId, name) => {
+    if (!window.confirm(`Are you sure you want to permanently delete submission by ${name}?`)) return;
+    try {
+      setData((prev) => ({
+        ...prev,
+        attempts: (prev.attempts || []).filter((a) => a.id !== attemptId),
+      }));
+      await api.deleteAdminAttempt(attemptId);
+      fetchParticipants();
+    } catch (err) {
+      alert(`Failed to delete attempt: ${err.message}`);
+      fetchParticipants();
     }
   };
 
@@ -287,13 +302,35 @@ export const ParticipantsView = ({ quizId }) => {
 
                     {/* Actions */}
                     <td style={{ padding: '14px 18px', textAlign: 'right' }}>
-                      <button
-                        onClick={() => setSelectedAttempt(att)}
-                        className="btn-secondary"
-                        style={{ padding: '6px 12px', fontSize: '12px' }}
-                      >
-                        Inspect Answers
-                      </button>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-end' }}>
+                        <button
+                          onClick={() => setSelectedAttempt(att)}
+                          className="btn-secondary"
+                          style={{ padding: '6px 12px', fontSize: '12px' }}
+                        >
+                          Inspect Answers
+                        </button>
+                        <button
+                          onClick={() => handleDeleteAttempt(att.id, att.participant_name)}
+                          style={{
+                            background: '#fef2f2',
+                            border: '1px solid #fecaca',
+                            borderRadius: '6px',
+                            color: '#dc2626',
+                            fontWeight: 700,
+                            fontSize: '11px',
+                            padding: '5px 8px',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                          }}
+                          title="Delete Submission"
+                        >
+                          <Trash2 size={13} />
+                          <span>Delete</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );

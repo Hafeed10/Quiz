@@ -99,8 +99,9 @@ WSGI_APPLICATION = 'quiz_backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DB_PATH = Path('/tmp/db.sqlite3') if (os.environ.get('VERCEL') or Path('/tmp').exists()) else BASE_DIR / 'db.sqlite3'
-if not DB_PATH.exists() and (BASE_DIR / 'db.sqlite3').exists() and DB_PATH != (BASE_DIR / 'db.sqlite3'):
+IS_VERCEL = bool(os.environ.get('VERCEL'))
+DB_PATH = Path('/tmp/db.sqlite3') if IS_VERCEL else (BASE_DIR / 'db.sqlite3')
+if IS_VERCEL and not DB_PATH.exists() and (BASE_DIR / 'db.sqlite3').exists():
     import shutil
     try:
         shutil.copy2(BASE_DIR / 'db.sqlite3', DB_PATH)
@@ -110,7 +111,7 @@ if not DB_PATH.exists() and (BASE_DIR / 'db.sqlite3').exists() and DB_PATH != (B
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': DB_PATH if DB_PATH.exists() else BASE_DIR / 'db.sqlite3',
+        'NAME': DB_PATH,
     }
 }
 

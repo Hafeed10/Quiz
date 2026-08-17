@@ -71,10 +71,16 @@ export const AdminDashboard = () => {
 
   const handleDeleteQuiz = async (quizId) => {
     try {
+      // Optimistic update
+      setQuizzes((prev) => prev.filter((q) => q.id !== quizId));
+      if (selectedQuizId === quizId) {
+        setSelectedQuizId('ALL');
+      }
       await api.deleteAdminQuiz(quizId);
-      loadData();
+      await loadData();
     } catch (err) {
-      alert(err.message);
+      alert(`Failed to delete quiz: ${err.message}`);
+      loadData();
     }
   };
 

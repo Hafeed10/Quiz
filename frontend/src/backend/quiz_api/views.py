@@ -11,7 +11,10 @@ from .serializers import (
     ParticipantSerializer, QuizPublicSerializer, AttemptSubmitSerializer,
     AdminQuizSerializer, AdminAttemptSerializer, QuestionOptionPublicSerializer
 )
-from .mongo_service import sync_participant_to_mongo, sync_quiz_to_mongo, sync_attempt_to_mongo, delete_quiz_from_mongo
+from .mongo_service import (
+    sync_participant_to_mongo, sync_quiz_to_mongo, sync_attempt_to_mongo,
+    delete_quiz_from_mongo, sync_from_mongo_to_sqlite
+)
 
 def get_next_quiz_info():
     today = timezone.localdate()
@@ -232,6 +235,11 @@ def get_today_quiz(request):
     Get today's quiz state and questions without answers.
     GET /api/quiz/today/?participant_id=123
     """
+    try:
+        sync_from_mongo_to_sqlite()
+    except Exception:
+        pass
+
     today = timezone.localdate()
     participant_id = request.GET.get('participant_id')
 
@@ -303,8 +311,14 @@ def submit_quiz_attempt(request, quiz_id):
 # ==========================================
 
 class AdminQuizViewSet(viewsets.ModelViewSet):
-    queryset = Quiz.objects.all().order_by('-quiz_date', '-created_at')
     serializer_class = AdminQuizSerializer
+
+    def get_queryset(self):
+        try:
+            sync_from_mongo_to_sqlite()
+        except Exception as e:
+            print(f"Error running sync_from_mongo_to_sqlite: {e}")
+        return Quiz.objects.all().order_by('-quiz_date', '-created_at')
 
     def perform_create(self, serializer):
         quiz = serializer.save()

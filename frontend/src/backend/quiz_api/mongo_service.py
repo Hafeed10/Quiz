@@ -209,3 +209,148 @@ def sync_attempt_to_mongo(attempt):
     t = threading.Thread(target=_sync_attempt_worker, args=(attempt_id,), daemon=True)
     t.start()
 
+
+def sync_from_mongo_to_sqlite():
+    """
+    Sync saved database records from MongoDB Atlas into Django ORM / SQLite database
+    so that all saved MongoDB Atlas data is displayed in the UI.
+    """
+    try:
+        db = get_mongo_db()
+        if db is None:
+            return
+
+        from quiz_api.models import Participant, Quiz, Question, QuestionOption, Attempt, Answer
+        from django.utils import timezone
+        from datetime import datetime, time
+
+        # 1. Sync Quizzes & Questions
+        mongo_quizzes = list(db.quizzes.find({}))
+        for q_doc in mongo_quizzes:
+            quiz_id = q_doc.get('quiz_id')
+            if not quiz_id:
+                continue
+
+            q_date_str = q_doc.get('quiz_date')
+            try:
+                q_date = datetime.strptime(q_date_str, '%Y-%m-%d').date() if isinstance(q_date_str, str) else q_date_str
+            except Exception:
+                q_date = timezone.localdate()
+
+            def parse_time(t_val):
+                if isinstance(t_val, str):
+                    try:
+                        return datetime.strptime(t_val, '%H:%M:%S').time()
+                    except Exception:
+                        try:
+                            return datetime.strptime(t_val, '%H:%M').time()
+                        except Exception:
+                            pass
+                return time(10, 0)
+
+            start_t = parse_time(q_doc.get('start_time', '10:00:00'))
+            end_t = parse_time(q_doc.get('end_time', '16:00:00'))
+
+            quiz_obj, _ = Quiz.objects.update_or_create(
+                id=quiz_id,
+                defaults={
+                    'title': q_doc.get('title', 'Daily Reading Quiz'),
+                    'quiz_date': q_date,
+                    'start_time': start_t,
+                    'end_time': end_t,
+                    'duration_minutes': q_doc.get('duration_minutes', 360),
+                    'passage_title': q_doc.get('passage_title', 'Reading Passage'),
+                    'passage_content': q_doc.get('passage_content', ''),
+                    'instructions': q_doc.get('instructions', ''),
+                    'status': q_doc.get('status', 'LIVE'),
+                }
+            )
+
+            # Questions & Options
+            for q_data in q_doc.get('questions', []):
+                q_num = q_data.get('question_number')
+                q_text = q_data.get('question_text', '')
+                if not q_num or not q_text:
+                    continue
+
+                q_obj, _ = Question.objects.update_or_create(
+                    quiz=quiz_obj,
+                    question_number=q_num,
+                    defaults={'question_text': q_text}
+                )
+
+                for opt_data in q_data.get('options', []):
+                    opt_key = opt_data.get('option_key')
+                    opt_text = opt_data.get('option_text', '')
+                    is_corr = bool(opt_data.get('is_correct', False))
+                    if opt_key and opt_text:
+                        QuestionOption.objects.update_or_create(
+                            question=q_obj,
+                            option_key=opt_key,
+                            defaults={
+                                'option_text': opt_text,
+                                'is_correct': is_corr
+                            }
+                        )
+
+        # 2. Sync Participants
+        mongo_participants = list(db.participants.find({}))
+        for p_doc in mongo_participants:
+            phone = p_doc.get('phone_number')
+            name = p_doc.get('name')
+            p_id = p_doc.get('participant_id')
+            if not phone or not name:
+                continue
+            if p_id:
+                Participant.objects.update_or_create(
+                    id=p_id,
+                    defaults={
+                        'name': name,
+                        'phone_number': phone,
+                        'photo': p_doc.get('photo', '')
+                    }
+                )
+            else:
+                Participant.objects.update_or_create(
+                    phone_number=phone,
+                    defaults={
+                        'name': name,
+                        'photo': p_doc.get('photo', '')
+                    }
+                )
+
+        # 3. Sync Attempts
+        mongo_attempts = list(db.attempts.find({}))
+        for a_doc in mongo_attempts:
+            att_id = a_doc.get('attempt_id')
+            q_id = a_doc.get('quiz_id')
+            p_id = a_doc.get('participant_id')
+            if not att_id or not q_id or not p_id:
+                continue
+
+            quiz_instance = Quiz.objects.filter(id=q_id).first()
+            participant_instance = Participant.objects.filter(id=p_id).first() or Participant.objects.filter(phone_number=a_doc.get('participant_phone')).first()
+
+            if quiz_instance and participant_instance:
+                sub_at_str = a_doc.get('submitted_at')
+                sub_at = timezone.now()
+                if sub_at_str:
+                    try:
+                        sub_at = datetime.fromisoformat(sub_at_str)
+                    except Exception:
+                        pass
+
+                Attempt.objects.update_or_create(
+                    id=att_id,
+                    defaults={
+                        'quiz': quiz_instance,
+                        'participant': participant_instance,
+                        'score': a_doc.get('score', 0),
+                        'status': a_doc.get('status', 'COMPLETED'),
+                        'submitted_at': sub_at
+                    }
+                )
+    except Exception as e:
+        print(f"[MongoDB Sync Engine] Error syncing from Mongo to SQLite: {e}")
+
+
