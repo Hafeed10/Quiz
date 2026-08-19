@@ -22,6 +22,8 @@ export const Header = ({ currentView, setCurrentView, openLoginModal, isQuizOpen
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  if (currentView === 'admin') return null;
+
   return (
     <header style={{
       borderBottom: 'none',

@@ -12,6 +12,7 @@ from .views import (
     admin_cumulative_participants,
     admin_attempt_detail,
     admin_quiz_winner,
+    select_admin_quiz_winner,
     admin_quiz_results_analytics,
     admin_delete_participant,
     admin_delete_attempt,
@@ -38,6 +39,7 @@ urlpatterns = [
     path('admin/attempts/<int:attempt_id>/delete/', admin_delete_attempt, name='admin-delete-attempt'),
     path('admin/attempts/<int:attempt_id>/', admin_attempt_detail, name='admin-attempt-detail'),
     path('admin/quizzes/<int:quiz_id>/winner/', admin_quiz_winner, name='admin-quiz-winner'),
+    path('admin/quizzes/<int:quiz_id>/select_winner/', select_admin_quiz_winner, name='admin-quiz-select-winner'),
     path('admin/quizzes/<int:quiz_id>/results/', admin_quiz_results_analytics, name='admin-quiz-results-analytics'),
 
     path('', include(router.urls)),

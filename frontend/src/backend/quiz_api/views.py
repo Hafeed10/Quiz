@@ -589,8 +589,10 @@ def admin_attempt_detail(request, attempt_id):
 def admin_quiz_winner(request, quiz_id):
     """
     Admin-only winner determination:
-    Primary: Highest Score (out of 4)
-    Secondary (Tie-break): Earliest valid submission timestamp.
+    Supports 3 modes:
+    - AUTO: Highest Score (out of 4) + Earliest submission timestamp tie-break.
+    - MANUAL: Hand-picked participant declared by admin.
+    - LUCKY_DRAW: Random lucky draw selection among top participants.
     """
     try:
         quiz = Quiz.objects.get(id=quiz_id)
@@ -602,42 +604,107 @@ def admin_quiz_winner(request, quiz_id):
     if not completed_attempts.exists():
         return Response({
             "winner_found": False,
+            "quiz_id": quiz.id,
+            "quiz_title": quiz.title,
+            "selection_mode": quiz.winner_selection_mode,
             "message": "No completed attempts recorded yet for this quiz.",
             "criteria": "Highest score + Earliest submission timestamp",
             "top_candidates": []
         })
 
-    winner_attempt = completed_attempts.first()
+    selection_mode = quiz.winner_selection_mode or 'AUTO'
+    winner_attempt = None
+
+    if selection_mode in ['MANUAL', 'LUCKY_DRAW'] and quiz.manual_winner:
+        winner_attempt = completed_attempts.filter(participant=quiz.manual_winner).first()
+
+    if not winner_attempt:
+        winner_attempt = completed_attempts.first()
+        selection_mode = 'AUTO'
+
     winner_submitted = timezone.localtime(winner_attempt.submitted_at) if winner_attempt.submitted_at else None
+
+    criteria_map = {
+        'AUTO': "Highest score + Earliest submission timestamp",
+        'MANUAL': "Official Hand-Picked Winner by Admin",
+        'LUCKY_DRAW': "Selected via Random Lucky Draw among top participants",
+    }
+
+    candidates = []
+    for idx, att in enumerate(completed_attempts[:20]):
+        candidates.append({
+            "rank": idx + 1,
+            "participant_id": att.participant.id,
+            "name": att.participant.name,
+            "masked_phone": att.participant.masked_phone,
+            "phone_number": att.participant.phone_number,
+            "photo": att.participant.photo or "",
+            "score": att.score,
+            "submitted_at": timezone.localtime(att.submitted_at).strftime('%H:%M:%S') if att.submitted_at else '—',
+            "is_selected_winner": att.participant.id == winner_attempt.participant.id
+        })
 
     response_data = {
         "winner_found": True,
         "quiz_id": quiz.id,
         "quiz_title": quiz.title,
         "quiz_date": quiz.quiz_date,
-        "criteria": "Highest score + Earliest submission timestamp",
+        "selection_mode": quiz.winner_selection_mode or 'AUTO',
+        "criteria": criteria_map.get(quiz.winner_selection_mode, criteria_map['AUTO']),
+        "winner_notes": quiz.winner_notes or "",
         "winner": {
             "participant_id": winner_attempt.participant.id,
             "name": winner_attempt.participant.name,
             "masked_phone": winner_attempt.participant.masked_phone,
             "phone_number": winner_attempt.participant.phone_number,
+            "photo": winner_attempt.participant.photo or "",
             "score": winner_attempt.score,
             "max_score": 4,
             "submitted_at": winner_submitted.strftime('%H:%M:%S') if winner_submitted else '—',
             "submitted_full": winner_submitted.isoformat() if winner_submitted else None
         },
-        "top_candidates": [
-            {
-                "rank": idx + 1,
-                "name": att.participant.name,
-                "masked_phone": att.participant.masked_phone,
-                "score": att.score,
-                "submitted_at": timezone.localtime(att.submitted_at).strftime('%H:%M:%S') if att.submitted_at else '—'
-            }
-            for idx, att in enumerate(completed_attempts[:10])
-        ]
+        "top_candidates": candidates
     }
     return Response(response_data)
+
+
+@api_view(['POST'])
+def select_admin_quiz_winner(request, quiz_id):
+    """
+    Set or override the daily winner for a quiz:
+    POST /api/admin/quizzes/<quiz_id>/select_winner/
+    Body: { "participant_id": 123, "selection_mode": "MANUAL" | "LUCKY_DRAW" | "AUTO", "notes": "..." }
+    """
+    try:
+        quiz = Quiz.objects.get(id=quiz_id)
+    except Quiz.DoesNotExist:
+        return Response({"error": "Quiz not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    participant_id = request.data.get('participant_id')
+    selection_mode = request.data.get('selection_mode', 'AUTO').upper()
+    notes = request.data.get('notes', '').strip()
+
+    if selection_mode == 'AUTO' or not participant_id:
+        quiz.manual_winner = None
+        quiz.winner_selection_mode = 'AUTO'
+    else:
+        try:
+            participant = Participant.objects.get(id=participant_id)
+            quiz.manual_winner = participant
+            quiz.winner_selection_mode = selection_mode if selection_mode in ['MANUAL', 'LUCKY_DRAW'] else 'MANUAL'
+        except Participant.DoesNotExist:
+            return Response({"error": "Participant not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    quiz.winner_notes = notes
+    quiz.save()
+
+    try:
+        sync_quiz_to_mongo(quiz)
+    except Exception as e:
+        print(f"Error syncing quiz winner to Mongo: {e}")
+
+    return admin_quiz_winner(request, quiz_id)
+
 
 
 @api_view(['GET'])

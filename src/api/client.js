@@ -79,6 +79,8 @@ export const api = {
     client.get(`/admin/attempts/${attemptId}/`),
   getAdminQuizWinner: (quizId) =>
     client.get(`/admin/quizzes/${quizId}/winner/`),
+  selectAdminQuizWinner: (quizId, data) =>
+    client.post(`/admin/quizzes/${quizId}/select_winner/`, data),
   getAdminQuizResults: (quizId) =>
     client.get(`/admin/quizzes/${quizId}/results/`),
   deleteAdminParticipant: (id) =>

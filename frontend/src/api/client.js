@@ -68,6 +68,10 @@ export const api = {
   getAdminCumulativeParticipants: () => request('/admin/participants/cumulative/'),
   getAdminAttemptDetail: (attemptId) => request(`/admin/attempts/${attemptId}/`),
   getAdminQuizWinner: (quizId) => request(`/admin/quizzes/${quizId}/winner/`),
+  selectAdminQuizWinner: (quizId, data) => request(`/admin/quizzes/${quizId}/select_winner/`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
   getAdminQuizResults: (quizId) => request(`/admin/quizzes/${quizId}/results/`),
   deleteAdminParticipant: (participantId) => request(`/admin/participants/${participantId}/delete/`, { method: 'DELETE' }),
   deleteAdminAttempt: (attemptId) => request(`/admin/attempts/${attemptId}/delete/`, { method: 'DELETE' }),

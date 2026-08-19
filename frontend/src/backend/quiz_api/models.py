@@ -46,6 +46,12 @@ class Quiz(models.Model):
         ('ARCHIVED', 'Archived'),
     ]
 
+    WINNER_MODE_CHOICES = [
+        ('AUTO', 'Automatic (Top Score + Earliest Time)'),
+        ('MANUAL', 'Manual Hand-Pick'),
+        ('LUCKY_DRAW', 'Lucky Draw Selector'),
+    ]
+
     title = models.CharField(max_length=255, default="Daily Reading Quiz")
     quiz_date = models.DateField(db_index=True)
     start_time = models.TimeField(default=time(10, 0))
@@ -59,6 +65,10 @@ class Quiz(models.Model):
     )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='SCHEDULED')
     
+    manual_winner = models.ForeignKey(Participant, on_delete=models.SET_NULL, null=True, blank=True, related_name='manual_winner_quizzes')
+    winner_selection_mode = models.CharField(max_length=20, choices=WINNER_MODE_CHOICES, default='AUTO')
+    winner_notes = models.CharField(max_length=255, blank=True, default='')
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
