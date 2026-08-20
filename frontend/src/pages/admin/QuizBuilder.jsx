@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { api } from '../../api/client';
 import { Sparkles, Calendar, Clock, Save, ArrowLeft } from 'lucide-react';
 
@@ -14,11 +14,31 @@ const defaultQuestion = (num) => ({
 });
 
 export const QuizBuilder = ({ quizToEdit, onSaved, onCancel }) => {
+  const calculateDurationFromTimes = (start, end) => {
+    if (!start || !end) return null;
+    const [startH, startM] = start.split(':').map(Number);
+    const [endH, endM] = end.split(':').map(Number);
+    if (isNaN(startH) || isNaN(startM) || isNaN(endH) || isNaN(endM)) return null;
+    let startTotal = startH * 60 + startM;
+    let endTotal = endH * 60 + endM;
+    if (endTotal < startTotal) {
+      endTotal += 24 * 60;
+    }
+    const diff = endTotal - startTotal;
+    return diff > 0 ? diff : null;
+  };
+
+  const initialDuration = () => {
+    if (quizToEdit?.duration_minutes) return quizToEdit.duration_minutes;
+    const diff = calculateDurationFromTimes(quizToEdit?.start_time || '10:00', quizToEdit?.end_time || '10:05');
+    return diff || 20;
+  };
+
   const [title, setTitle] = useState(quizToEdit?.title || '');
   const [quizDate, setQuizDate] = useState(quizToEdit?.quiz_date || new Date().toISOString().split('T')[0]);
   const [startTime, setStartTime] = useState(quizToEdit?.start_time || '10:00');
   const [endTime, setEndTime] = useState(quizToEdit?.end_time || '10:05');
-  const [durationMinutes, setDurationMinutes] = useState(quizToEdit?.duration_minutes || 20);
+  const [durationMinutes, setDurationMinutes] = useState(initialDuration());
   const [passageTitle, setPassageTitle] = useState(quizToEdit?.passage_title || '');
   const [passageContent, setPassageContent] = useState(quizToEdit?.passage_content || '');
   const [instructions, setInstructions] = useState(
@@ -34,6 +54,41 @@ export const QuizBuilder = ({ quizToEdit, onSaved, onCancel }) => {
 
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState([]);
+
+  useEffect(() => {
+    if (quizToEdit) {
+      setTitle(quizToEdit.title || '');
+      setQuizDate(quizToEdit.quiz_date || new Date().toISOString().split('T')[0]);
+      setStartTime(quizToEdit.start_time || '10:00');
+      setEndTime(quizToEdit.end_time || '10:05');
+      setDurationMinutes(quizToEdit.duration_minutes || calculateDurationFromTimes(quizToEdit.start_time, quizToEdit.end_time) || 20);
+      setPassageTitle(quizToEdit.passage_title || '');
+      setPassageContent(quizToEdit.passage_content || '');
+      setInstructions(
+        quizToEdit.instructions || 'Read the following paragraph carefully before answering the 4 questions below.'
+      );
+      setStatus(quizToEdit.status || 'SCHEDULED');
+      if (quizToEdit.questions?.length === 4) {
+        setQuestions(quizToEdit.questions);
+      }
+    }
+  }, [quizToEdit]);
+
+  const handleStartTimeChange = (val) => {
+    setStartTime(val);
+    const diff = calculateDurationFromTimes(val, endTime);
+    if (diff !== null && diff > 0) {
+      setDurationMinutes(diff);
+    }
+  };
+
+  const handleEndTimeChange = (val) => {
+    setEndTime(val);
+    const diff = calculateDurationFromTimes(startTime, val);
+    if (diff !== null && diff > 0) {
+      setDurationMinutes(diff);
+    }
+  };
 
   const handleQuestionTextChange = (idx, text) => {
     const updated = [...questions];
@@ -60,6 +115,9 @@ export const QuizBuilder = ({ quizToEdit, onSaved, onCancel }) => {
     const errs = [];
     if (!title.trim()) errs.push('Quiz title is required.');
     if (!passageContent.trim()) errs.push('Reading passage content cannot be empty.');
+    if (!durationMinutes || isNaN(Number(durationMinutes)) || Number(durationMinutes) <= 0) {
+      errs.push('Duration (Minutes) must be a positive number.');
+    }
     if (questions.length !== 4) errs.push('Quiz must contain exactly 4 questions.');
 
     questions.forEach((q, idx) => {
@@ -219,7 +277,7 @@ export const QuizBuilder = ({ quizToEdit, onSaved, onCancel }) => {
           <input
             type="time"
             value={startTime}
-            onChange={(e) => setStartTime(e.target.value)}
+            onChange={(e) => handleStartTimeChange(e.target.value)}
             style={{ width: '100%' }}
           />
         </div>
@@ -231,7 +289,7 @@ export const QuizBuilder = ({ quizToEdit, onSaved, onCancel }) => {
           <input
             type="time"
             value={endTime}
-            onChange={(e) => setEndTime(e.target.value)}
+            onChange={(e) => handleEndTimeChange(e.target.value)}
             style={{ width: '100%' }}
           />
         </div>
@@ -243,7 +301,7 @@ export const QuizBuilder = ({ quizToEdit, onSaved, onCancel }) => {
           <input
             type="number"
             min="1"
-            max="60"
+            max="1440"
             value={durationMinutes}
             onChange={(e) => setDurationMinutes(e.target.value)}
             style={{ width: '100%' }}
