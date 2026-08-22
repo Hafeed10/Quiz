@@ -89,4 +89,6 @@ export const api = {
     client.delete(`/admin/participants/${id}/delete/`),
   deleteAdminAttempt: (id) =>
     client.delete(`/admin/attempts/${id}/delete/`),
+  syncFromMongo: () =>
+    client.post('/admin/sync_mongo/'),
 };

@@ -16,6 +16,7 @@ from .views import (
     admin_quiz_results_analytics,
     admin_delete_participant,
     admin_delete_attempt,
+    admin_sync_mongo,
 )
 
 router = DefaultRouter()
@@ -33,6 +34,7 @@ urlpatterns = [
 
     # Admin Management & Analytics
     path('admin/stats/', admin_dashboard_stats, name='admin-dashboard-stats'),
+    path('admin/sync_mongo/', admin_sync_mongo, name='admin-sync-mongo'),
     path('admin/participants/cumulative/', admin_cumulative_participants, name='admin-cumulative-participants'),
     path('admin/participants/<int:participant_id>/delete/', admin_delete_participant, name='admin-delete-participant'),
     path('admin/participants/', admin_participants_list, name='admin-participants-list'),

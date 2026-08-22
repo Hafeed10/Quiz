@@ -78,4 +78,5 @@ export const api = {
   getAdminQuizResults: (quizId) => request(`/admin/quizzes/${quizId}/results/`),
   deleteAdminParticipant: (participantId) => request(`/admin/participants/${participantId}/delete/`, { method: 'DELETE' }),
   deleteAdminAttempt: (attemptId) => request(`/admin/attempts/${attemptId}/delete/`, { method: 'DELETE' }),
+  syncFromMongo: () => request('/admin/sync_mongo/', { method: 'POST' }),
 };

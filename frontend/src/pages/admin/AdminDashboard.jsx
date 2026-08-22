@@ -39,6 +39,7 @@ export const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('operations'); // 'operations' | 'leaderboard' | 'participants' | 'winner' | 'history' | 'builder'
   const [editingQuiz, setEditingQuiz] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [syncingMongo, setSyncingMongo] = useState(false);
   const [activeWinnerData, setActiveWinnerData] = useState(null);
 
   const loadData = async () => {
@@ -121,6 +122,19 @@ export const AdminDashboard = () => {
     } catch (err) {
       alert(`Failed to delete quiz: ${err.message}`);
       loadData();
+    }
+  };
+
+  const handleSyncMongo = async () => {
+    setSyncingMongo(true);
+    try {
+      const res = await api.syncFromMongo();
+      alert(res.message || 'Synced successfully from MongoDB Atlas!');
+      await loadData();
+    } catch (err) {
+      alert(`Sync failed: ${err.message}`);
+    } finally {
+      setSyncingMongo(false);
     }
   };
 
@@ -589,6 +603,29 @@ export const AdminDashboard = () => {
                     >
                       <PlusCircle size={16} color="#065f46" />
                       Create Daily Quiz
+                    </button>
+
+                    <button
+                      onClick={handleSyncMongo}
+                      disabled={syncingMongo}
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.15)',
+                        backdropFilter: 'blur(8px)',
+                        border: '1px solid rgba(255, 255, 255, 0.25)',
+                        color: '#ffffff',
+                        padding: '10px 14px',
+                        borderRadius: '12px',
+                        cursor: syncingMongo ? 'not-allowed' : 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                      }}
+                      title="Sync latest live attempts & submissions from MongoDB Atlas"
+                    >
+                      <Sparkles size={15} className={syncingMongo ? 'animate-spin' : ''} color="#34d399" />
+                      <span>{syncingMongo ? 'Syncing Cloud...' : 'Sync Cloud Data'}</span>
                     </button>
 
                     <button

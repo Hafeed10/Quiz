@@ -322,34 +322,66 @@ def sync_from_mongo_to_sqlite():
         # 3. Sync Attempts
         mongo_attempts = list(db.attempts.find({}))
         for a_doc in mongo_attempts:
-            att_id = a_doc.get('attempt_id')
             q_id = a_doc.get('quiz_id')
             p_id = a_doc.get('participant_id')
-            if not att_id or not q_id or not p_id:
-                continue
+            phone = a_doc.get('participant_phone')
+            name = a_doc.get('participant_name', 'Participant')
 
             quiz_instance = Quiz.objects.filter(id=q_id).first()
-            participant_instance = Participant.objects.filter(id=p_id).first() or Participant.objects.filter(phone_number=a_doc.get('participant_phone')).first()
+            if not quiz_instance:
+                continue
 
-            if quiz_instance and participant_instance:
-                sub_at_str = a_doc.get('submitted_at')
-                sub_at = timezone.now()
-                if sub_at_str:
-                    try:
-                        sub_at = datetime.fromisoformat(sub_at_str)
-                    except Exception:
-                        pass
-
-                Attempt.objects.update_or_create(
-                    id=att_id,
-                    defaults={
-                        'quiz': quiz_instance,
-                        'participant': participant_instance,
-                        'score': a_doc.get('score', 0),
-                        'status': a_doc.get('status', 'COMPLETED'),
-                        'submitted_at': sub_at
-                    }
+            participant_instance = None
+            if p_id:
+                participant_instance = Participant.objects.filter(id=p_id).first()
+            if not participant_instance and phone:
+                participant_instance = Participant.objects.filter(phone_number=phone).first()
+            if not participant_instance and phone:
+                participant_instance, _ = Participant.objects.update_or_create(
+                    phone_number=phone,
+                    defaults={'name': name}
                 )
+
+            if not participant_instance:
+                continue
+
+            sub_at_str = a_doc.get('submitted_at')
+            sub_at = timezone.now()
+            if sub_at_str:
+                try:
+                    sub_at = datetime.fromisoformat(sub_at_str)
+                except Exception:
+                    pass
+
+            attempt_obj, _ = Attempt.objects.update_or_create(
+                quiz=quiz_instance,
+                participant=participant_instance,
+                defaults={
+                    'score': a_doc.get('score', 0),
+                    'status': a_doc.get('status', 'COMPLETED'),
+                    'submitted_at': sub_at
+                }
+            )
+
+            # Sync answers if any
+            for ans_data in a_doc.get('answers', []):
+                q_id_val = ans_data.get('question_id')
+                q_obj = Question.objects.filter(quiz=quiz_instance, id=q_id_val).first() if q_id_val else None
+                if not q_obj:
+                    q_text = ans_data.get('question_text')
+                    if q_text:
+                        q_obj = Question.objects.filter(quiz=quiz_instance, question_text=q_text).first()
+                if q_obj:
+                    opt_key = ans_data.get('selected_option_key')
+                    opt_obj = QuestionOption.objects.filter(question=q_obj, option_key=opt_key).first() if opt_key else None
+                    Answer.objects.update_or_create(
+                        attempt=attempt_obj,
+                        question=q_obj,
+                        defaults={
+                            'selected_option': opt_obj,
+                            'is_correct': ans_data.get('is_correct', False)
+                        }
+                    )
     except Exception as e:
         print(f"[MongoDB Sync Engine] Error syncing from Mongo to SQLite: {e}")
 

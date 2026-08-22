@@ -743,3 +743,23 @@ def admin_quiz_results_analytics(request, quiz_id):
         "score_distribution": score_distribution,
         "questions_analytics": questions_analytics
     })
+
+
+@api_view(['POST'])
+def admin_sync_mongo(request):
+    """
+    On-demand sync from MongoDB Atlas into local SQLite database.
+    """
+    try:
+        from .mongo_service import sync_from_mongo_to_sqlite
+        sync_from_mongo_to_sqlite()
+        return Response({
+            "success": True,
+            "message": "Successfully synchronized all quizzes, participants, and attempts from MongoDB Atlas.",
+            "total_quizzes": Quiz.objects.count(),
+            "total_participants": Participant.objects.count(),
+            "total_attempts": Attempt.objects.count()
+        })
+    except Exception as e:
+        return Response({"success": False, "error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
