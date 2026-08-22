@@ -77,8 +77,10 @@ export const api = {
     client.get('/admin/participants/cumulative/'),
   getAdminAttemptDetail: (attemptId) =>
     client.get(`/admin/attempts/${attemptId}/`),
-  getAdminQuizWinner: (quizId) =>
-    client.get(`/admin/quizzes/${quizId}/winner/`),
+  getAdminQuizWinner: (quizId) => {
+    if (!quizId || quizId === 'ALL') return Promise.resolve({ winner_found: false });
+    return client.get(`/admin/quizzes/${quizId}/winner/`);
+  },
   selectAdminQuizWinner: (quizId, data) =>
     client.post(`/admin/quizzes/${quizId}/select_winner/`, data),
   getAdminQuizResults: (quizId) =>

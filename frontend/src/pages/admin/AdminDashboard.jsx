@@ -44,20 +44,23 @@ export const AdminDashboard = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [statsRes, quizzesRes] = await Promise.all([
+      const [statsRes, quizzesRes] = await Promise.allSettled([
         api.getAdminStats(),
         api.getAdminQuizzes(),
       ]);
-      setStats(statsRes);
-      setQuizzes(quizzesRes);
+      const statsData = statsRes.status === 'fulfilled' ? statsRes.value : null;
+      const quizzesData = quizzesRes.status === 'fulfilled' && Array.isArray(quizzesRes.value) ? quizzesRes.value : [];
 
-      const todayId = statsRes?.today_stats?.quiz_id;
-      if (quizzesRes.length > 0) {
+      if (statsData) setStats(statsData);
+      if (quizzesData) setQuizzes(quizzesData);
+
+      const todayId = statsData?.today_stats?.quiz_id;
+      if (quizzesData.length > 0) {
         const activeQuiz =
-          quizzesRes.find((q) => q.dynamic_status === 'LIVE' || q.status === 'LIVE') ||
-          quizzesRes.find((q) => q.id === todayId) ||
-          quizzesRes[0];
-        if (activeQuiz && !selectedQuizId) {
+          quizzesData.find((q) => q.dynamic_status === 'LIVE' || q.status === 'LIVE') ||
+          quizzesData.find((q) => q.id === todayId) ||
+          quizzesData[0];
+        if (activeQuiz && (!selectedQuizId || selectedQuizId === 'ALL')) {
           setSelectedQuizId(activeQuiz.id);
         }
       }
@@ -467,7 +470,7 @@ export const AdminDashboard = () => {
                 <CustomDropdown
                   options={quizDropdownOptions}
                   value={selectedQuizId}
-                  onChange={(val) => setSelectedQuizId(Number(val))}
+                  onChange={(val) => setSelectedQuizId(val === 'ALL' ? 'ALL' : Number(val))}
                   width="360px"
                   popoverWidth="460px"
                 />
@@ -729,13 +732,13 @@ export const AdminDashboard = () => {
           )}
 
           {/* TAB 3: LIVE SUBMISSIONS */}
-          {activeTab === 'participants' && selectedQuizId && (
-            <ParticipantsView quizId={selectedQuizId} />
+          {activeTab === 'participants' && (
+            <ParticipantsView quizId={selectedQuizId || 'ALL'} />
           )}
 
           {/* TAB 4: WINNER PORTAL */}
-          {activeTab === 'winner' && selectedQuizId && (
-            <WinnerView quizId={selectedQuizId} />
+          {activeTab === 'winner' && (
+            <WinnerView quizId={selectedQuizId && selectedQuizId !== 'ALL' ? selectedQuizId : (stats?.today_stats?.quiz_id || quizzes[0]?.id)} />
           )}
 
           {/* TAB 5: QUIZ HISTORY */}

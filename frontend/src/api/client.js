@@ -67,7 +67,10 @@ export const api = {
   getAdminParticipants: (quizId) => request(`/admin/participants/${quizId ? `?quiz_id=${quizId}` : ''}`),
   getAdminCumulativeParticipants: () => request('/admin/participants/cumulative/'),
   getAdminAttemptDetail: (attemptId) => request(`/admin/attempts/${attemptId}/`),
-  getAdminQuizWinner: (quizId) => request(`/admin/quizzes/${quizId}/winner/`),
+  getAdminQuizWinner: (quizId) => {
+    if (!quizId || quizId === 'ALL') return Promise.resolve({ winner_found: false });
+    return request(`/admin/quizzes/${quizId}/winner/`);
+  },
   selectAdminQuizWinner: (quizId, data) => request(`/admin/quizzes/${quizId}/select_winner/`, {
     method: 'POST',
     body: JSON.stringify(data),

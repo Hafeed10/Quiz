@@ -235,11 +235,6 @@ def get_today_quiz(request):
     Get today's quiz state and questions without answers.
     GET /api/quiz/today/?participant_id=123
     """
-    try:
-        sync_from_mongo_to_sqlite()
-    except Exception:
-        pass
-
     today = timezone.localdate()
     participant_id = request.GET.get('participant_id')
 
@@ -314,10 +309,6 @@ class AdminQuizViewSet(viewsets.ModelViewSet):
     serializer_class = AdminQuizSerializer
 
     def get_queryset(self):
-        try:
-            sync_from_mongo_to_sqlite()
-        except Exception as e:
-            print(f"Error running sync_from_mongo_to_sqlite: {e}")
         return Quiz.objects.all().order_by('-quiz_date', '-created_at')
 
     def perform_create(self, serializer):
@@ -462,14 +453,14 @@ def admin_cumulative_participants(request):
     results = []
     for key, p_list in grouped.items():
         # Master is the participant with the most attempts
-        p_list.sort(key=lambda x: (x.attempts.count(), -x.id), reverse=True)
+        p_list.sort(key=lambda x: (len(x.attempts.all()), -x.id), reverse=True)
         primary = p_list[0]
 
-        # Gather all completed attempts across all linked records
+        # Gather all completed attempts across all linked records in memory
         all_completed = []
         seen_quiz_ids = set()
         for p in p_list:
-            comp = p.attempts.filter(status='COMPLETED').select_related('quiz').order_by('-quiz__quiz_date', '-submitted_at')
+            comp = [a for a in p.attempts.all() if a.status == 'COMPLETED']
             for a in comp:
                 if a.quiz_id not in seen_quiz_ids:
                     seen_quiz_ids.add(a.quiz_id)

@@ -16,6 +16,11 @@ export const WinnerView = ({ quizId }) => {
   const [highlightedIndex, setHighlightedIndex] = useState(null);
 
   const fetchWinner = async () => {
+    if (!quizId || quizId === 'ALL') {
+      setWinnerData(null);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const res = await api.getAdminQuizWinner(quizId);
@@ -127,9 +132,13 @@ export const WinnerView = ({ quizId }) => {
         <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#f8fafc', border: '2px solid #cbd5e1', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Trophy size={32} color="#94a3b8" />
         </div>
-        <h3 style={{ fontSize: '20px', fontWeight: 900, color: '#0f172a' }}>No Completed Attempts Yet</h3>
+        <h3 style={{ fontSize: '20px', fontWeight: 900, color: '#0f172a' }}>
+          {quizId === 'ALL' ? 'Select an Individual Quiz' : 'No Completed Attempts Yet'}
+        </h3>
         <p style={{ fontSize: '13px', color: '#64748b', marginTop: '6px', maxWidth: '420px', margin: '6px auto 0' }}>
-          The winner will be calculated automatically as soon as participants submit their answers for this assessment.
+          {quizId === 'ALL'
+            ? 'Winner selection is calculated per daily assessment. Please select a specific quiz from the dropdown menu above to view its standings.'
+            : 'The winner will be calculated automatically as soon as participants submit their answers for this assessment.'}
         </p>
       </div>
     );
