@@ -21,6 +21,7 @@ export const WinnerView = ({ quizId }) => {
       setLoading(false);
       return;
     }
+    
     setLoading(true);
     try {
       const res = await api.getAdminQuizWinner(quizId);
