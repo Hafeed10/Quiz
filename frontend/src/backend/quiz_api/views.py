@@ -621,8 +621,11 @@ def admin_quiz_winner(request, quiz_id):
         'LUCKY_DRAW': "Selected via Random Lucky Draw among top participants",
     }
 
+    max_score = completed_attempts.first().score if completed_attempts.exists() else 0
+    tied_top_attempts = [att for att in completed_attempts if att.score == max_score]
+
     candidates = []
-    for idx, att in enumerate(completed_attempts[:20]):
+    for idx, att in enumerate(completed_attempts):
         candidates.append({
             "rank": idx + 1,
             "participant_id": att.participant.id,
@@ -632,8 +635,17 @@ def admin_quiz_winner(request, quiz_id):
             "photo": att.participant.photo or "",
             "score": att.score,
             "submitted_at": timezone.localtime(att.submitted_at).strftime('%H:%M:%S') if att.submitted_at else '—',
-            "is_selected_winner": att.participant.id == winner_attempt.participant.id
+            "is_selected_winner": att.participant.id == winner_attempt.participant.id,
+            "is_tied_top": att.score == max_score
         })
+
+    # Group counts by score
+    from collections import Counter
+    score_counts = Counter(c['score'] for c in candidates)
+    score_tiers = [
+        {"score": sc, "count": cnt, "is_max": sc == max_score}
+        for sc, cnt in sorted(score_counts.items(), key=lambda x: x[0], reverse=True)
+    ]
 
     response_data = {
         "winner_found": True,
@@ -643,6 +655,9 @@ def admin_quiz_winner(request, quiz_id):
         "selection_mode": quiz.winner_selection_mode or 'AUTO',
         "criteria": criteria_map.get(quiz.winner_selection_mode, criteria_map['AUTO']),
         "winner_notes": quiz.winner_notes or "",
+        "max_score": max_score,
+        "tied_top_count": len(tied_top_attempts),
+        "score_tiers": score_tiers,
         "winner": {
             "participant_id": winner_attempt.participant.id,
             "name": winner_attempt.participant.name,

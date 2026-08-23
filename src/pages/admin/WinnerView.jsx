@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../../api/client';
 import confetti from 'canvas-confetti';
 import {
   Trophy, Sparkles, Eye, EyeOff, Check, Copy, Award, Clock, Users,
-  Dices, Crown, RotateCcw, CheckCircle2, Zap, UserCheck, RefreshCw
+  Dices, Crown, RotateCcw, CheckCircle2, Zap, UserCheck, RefreshCw, X, Play, Volume2
 } from 'lucide-react';
 
 export const WinnerView = ({ quizId }) => {
@@ -12,8 +12,15 @@ export const WinnerView = ({ quizId }) => {
   const [updating, setUpdating] = useState(false);
   const [showFullPhone, setShowFullPhone] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // Lucky Draw Modal State
+  const [showDrawModal, setShowDrawModal] = useState(false);
+  const [selectedScoreTier, setSelectedScoreTier] = useState(null);
   const [isSpinning, setIsSpinning] = useState(false);
-  const [highlightedIndex, setHighlightedIndex] = useState(null);
+  const [spunWinner, setSpunWinner] = useState(null);
+  const [activePoolIndex, setActivePoolIndex] = useState(0);
+  const [spinSpeed, setSpinSpeed] = useState(50);
+  const spinIntervalRef = useRef(null);
 
   const fetchWinner = async () => {
     if (!quizId || quizId === 'ALL') {
@@ -21,12 +28,14 @@ export const WinnerView = ({ quizId }) => {
       setLoading(false);
       return;
     }
-    
     setLoading(true);
     try {
       const res = await api.getAdminQuizWinner(quizId);
       setWinnerData(res);
-      if (res && res.winner_found) {
+      if (res && res.max_score !== undefined) {
+        setSelectedScoreTier(res.max_score);
+      }
+      if (res && res.winner_found && !spunWinner) {
         setTimeout(() => {
           triggerConfetti();
         }, 350);
@@ -39,10 +48,15 @@ export const WinnerView = ({ quizId }) => {
   };
 
   useEffect(() => {
-    if (quizId) fetchWinner();
+    if (quizId) {
+      setSpunWinner(null);
+      setShowDrawModal(false);
+      fetchWinner();
+    }
   }, [quizId]);
 
   const handleCopy = (phone) => {
+    if (!phone) return;
     navigator.clipboard.writeText(phone);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -92,29 +106,63 @@ export const WinnerView = ({ quizId }) => {
     }
   };
 
-  const handleLuckyDraw = () => {
-    if (!winnerData?.top_candidates || winnerData.top_candidates.length === 0) return;
+  // Get current candidate pool based on selected points tier
+  const allCandidates = winnerData?.top_candidates || [];
+  const maxScore = winnerData?.max_score ?? (allCandidates[0]?.score ?? 4);
+  const activeScore = selectedScoreTier !== null ? selectedScoreTier : maxScore;
+  
+  // Candidates that share the exact same number of points
+  const tiedPool = allCandidates.filter((c) => c.score === activeScore);
 
-    const maxScore = Math.max(...winnerData.top_candidates.map(c => c.score));
-    const eligible = winnerData.top_candidates.filter(c => c.score === maxScore);
-    const pool = eligible.length > 0 ? eligible : winnerData.top_candidates;
-
+  const startLuckyDrawSpin = () => {
+    if (tiedPool.length === 0 || isSpinning) return;
     setIsSpinning(true);
-    let counter = 0;
-    const totalSpins = 25;
-    const interval = setInterval(() => {
-      const randIndex = Math.floor(Math.random() * pool.length);
-      setHighlightedIndex(pool[randIndex].participant_id);
-      counter++;
+    setSpunWinner(null);
 
-      if (counter >= totalSpins) {
-        clearInterval(interval);
-        const finalSelected = pool[randIndex];
-        setIsSpinning(false);
-        setHighlightedIndex(null);
-        handleSelectWinner(finalSelected.participant_id, 'LUCKY_DRAW');
+    let currentIdx = 0;
+    let iterations = 0;
+    const totalIterations = Math.max(35, tiedPool.length * 3 + Math.floor(Math.random() * 8));
+    let delay = 60;
+
+    const runStep = () => {
+      currentIdx = (currentIdx + 1) % tiedPool.length;
+      setActivePoolIndex(currentIdx);
+      iterations++;
+
+      if (iterations > totalIterations - 12) {
+        delay += 35; // Easing deceleration
+      } else if (iterations > totalIterations - 6) {
+        delay += 70;
       }
-    }, 90);
+
+      if (iterations < totalIterations) {
+        spinIntervalRef.current = setTimeout(runStep, delay);
+      } else {
+        // Spin finished!
+        const chosen = tiedPool[currentIdx];
+        setSpunWinner(chosen);
+        setIsSpinning(false);
+        triggerConfetti();
+      }
+    };
+
+    spinIntervalRef.current = setTimeout(runStep, delay);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (spinIntervalRef.current) clearTimeout(spinIntervalRef.current);
+    };
+  }, []);
+
+  const openLuckyDrawModal = (scoreTier = null) => {
+    if (scoreTier !== null) {
+      setSelectedScoreTier(scoreTier);
+    } else if (selectedScoreTier === null && winnerData?.max_score !== undefined) {
+      setSelectedScoreTier(winnerData.max_score);
+    }
+    setSpunWinner(null);
+    setShowDrawModal(true);
   };
 
   if (loading) {
@@ -145,7 +193,7 @@ export const WinnerView = ({ quizId }) => {
     );
   }
 
-  const { winner, top_candidates, criteria, quiz_title, selection_mode } = winnerData;
+  const { winner, top_candidates, criteria, quiz_title, selection_mode, score_tiers, tied_top_count } = winnerData;
 
   const modeBadgeText = {
     AUTO: '⚡ Auto-Calculated (Fastest 4/4)',
@@ -170,10 +218,10 @@ export const WinnerView = ({ quizId }) => {
         border: '1.5px solid #e2e8f0',
         boxShadow: '0 8px 24px rgba(15, 23, 42, 0.04)',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           <Crown size={20} color="#d97706" />
           <span style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a' }}>
-            Daily Winner Selection Mode:
+            Daily Winner Mode:
           </span>
           <span style={{
             fontSize: '12px',
@@ -186,32 +234,57 @@ export const WinnerView = ({ quizId }) => {
           }}>
             {modeBadgeText[selection_mode] || '⚡ Auto-Calculated'}
           </span>
+          
+          {tied_top_count > 1 && (
+            <span style={{
+              fontSize: '11px',
+              fontWeight: 700,
+              padding: '3px 8px',
+              borderRadius: '6px',
+              background: '#fef3c7',
+              color: '#92400e',
+              border: '1px solid #fde68a',
+            }}>
+              🎯 {tied_top_count} participants tied with {maxScore}/4 pts
+            </span>
+          )}
         </div>
 
         {/* Action Controls */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          {/* Lucky Draw Trigger */}
+          {/* Lucky Draw Trigger Button */}
           <button
-            onClick={handleLuckyDraw}
-            disabled={isSpinning || updating}
+            onClick={() => openLuckyDrawModal(maxScore)}
+            disabled={updating}
             style={{
-              padding: '8px 16px',
-              fontSize: '12px',
+              padding: '9px 18px',
+              fontSize: '13px',
               fontWeight: 800,
-              color: '#92400e',
-              background: '#fffbeb',
-              border: '1.5px solid #fde68a',
+              color: '#78350f',
+              background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+              border: '1.5px solid #f59e0b',
               borderRadius: '10px',
-              cursor: isSpinning ? 'not-allowed' : 'pointer',
+              cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '7px',
-              boxShadow: '0 2px 8px rgba(217, 119, 6, 0.15)',
+              gap: '8px',
+              boxShadow: '0 4px 12px rgba(217, 119, 6, 0.2)',
               transition: 'all 0.15s ease',
             }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-1px)';
+              e.currentTarget.style.boxShadow = '0 6px 16px rgba(217, 119, 6, 0.28)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'none';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(217, 119, 6, 0.2)';
+            }}
           >
-            <Dices size={16} className={isSpinning ? 'animate-spin' : ''} color="#d97706" />
-            {isSpinning ? 'Spinning Lucky Draw...' : 'Spin Lucky Draw 🎲'}
+            <Dices size={17} color="#b45309" />
+            <span>Spin Lucky Draw</span>
+            <span style={{ background: '#b45309', color: '#ffffff', padding: '1px 6px', borderRadius: '999px', fontSize: '10px', fontWeight: 900 }}>
+              {tied_top_count} Tied
+            </span>
           </button>
 
           {/* Reset to Auto */}
@@ -262,7 +335,7 @@ export const WinnerView = ({ quizId }) => {
           transform: 'translateX(-50%)',
           width: '320px',
           height: '200px',
-          background: 'radial-gradient(circle, rgba(52, 211, 153, 0.25) 0%, rgba(255, 255, 255, 0) 70%)',
+          background: 'radial-gradient(circle, rgba(52, 211, 153, 0.25) 0%, rgba(255, 255, 255) 70%)',
           pointerEvents: 'none',
         }} />
 
@@ -467,29 +540,55 @@ export const WinnerView = ({ quizId }) => {
       <div className="glass-card" style={{ padding: '28px', background: '#ffffff', borderRadius: '20px', border: '1.5px solid #e2e8f0', boxShadow: '0 10px 30px -5px rgba(0, 0, 0, 0.05)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
           <div>
-            <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0f172a', margin: 0 }}>Top Leaderboard Standings</h3>
-            <p style={{ fontSize: '12px', color: '#64748b', margin: '4px 0 0' }}>Click "Select Winner" on any candidate below to override the daily winner.</p>
+            <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0f172a', margin: 0 }}>
+              All Participants Standings ({top_candidates?.length || 0})
+            </h3>
+            <p style={{ fontSize: '12px', color: '#64748b', margin: '4px 0 0' }}>
+              Candidates tied with the same points can be spun via Lucky Draw or selected manually.
+            </p>
           </div>
 
-          <button
-            onClick={() => setShowFullPhone(!showFullPhone)}
-            style={{
-              padding: '7px 14px',
-              fontSize: '12px',
-              fontWeight: 700,
-              background: '#f8fafc',
-              border: '1px solid #cbd5e1',
-              borderRadius: '8px',
-              color: '#334155',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}
-          >
-            {showFullPhone ? <EyeOff size={14} /> : <Eye size={14} />}
-            {showFullPhone ? 'Mask Phones' : 'Show All Phones'}
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <button
+              onClick={() => openLuckyDrawModal(maxScore)}
+              style={{
+                padding: '7px 14px',
+                fontSize: '12px',
+                fontWeight: 800,
+                color: '#92400e',
+                background: '#fef3c7',
+                border: '1.5px solid #fde68a',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+            >
+              <Dices size={15} color="#d97706" />
+              Spin Tied {maxScore}/4 Scorers ({tied_top_count})
+            </button>
+
+            <button
+              onClick={() => setShowFullPhone(!showFullPhone)}
+              style={{
+                padding: '7px 14px',
+                fontSize: '12px',
+                fontWeight: 700,
+                background: '#f8fafc',
+                border: '1px solid #cbd5e1',
+                borderRadius: '8px',
+                color: '#334155',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+            >
+              {showFullPhone ? <EyeOff size={14} /> : <Eye size={14} />}
+              {showFullPhone ? 'Mask Phones' : 'Show All Phones'}
+            </button>
+          </div>
         </div>
 
         <div style={{ overflowX: 'auto' }}>
@@ -507,17 +606,17 @@ export const WinnerView = ({ quizId }) => {
             <tbody>
               {top_candidates?.map((c) => {
                 const isWinner = c.is_selected_winner;
-                const isHighlighted = highlightedIndex === c.participant_id;
+                const isTiedTop = c.is_tied_top;
 
                 return (
                   <tr
-                    key={c.rank}
+                    key={c.participant_id}
                     style={{
                       borderBottom: '1px solid #e2e8f0',
                       background: isWinner
                         ? '#ecfdf5'
-                        : isHighlighted
-                        ? '#fef3c7'
+                        : isTiedTop
+                        ? '#fffdf5'
                         : undefined,
                       transition: 'background 0.15s ease',
                     }}
@@ -530,7 +629,23 @@ export const WinnerView = ({ quizId }) => {
                         {c.photo ? (
                           <img src={c.photo} alt={c.name} style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
                         ) : null}
-                        <span>{c.name}</span>
+                        <div>
+                          <span>{c.name}</span>
+                          {isTiedTop && (
+                            <span style={{
+                              marginLeft: '8px',
+                              fontSize: '10px',
+                              fontWeight: 800,
+                              background: '#fef3c7',
+                              color: '#92400e',
+                              padding: '2px 6px',
+                              borderRadius: '4px',
+                              border: '1px solid #fde68a',
+                            }}>
+                              ⭐ Tied Pool
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </td>
                     <td style={{ padding: '14px 16px', fontFamily: 'var(--font-mono)', fontSize: '12px', color: '#475569' }}>
@@ -561,7 +676,7 @@ export const WinnerView = ({ quizId }) => {
                       ) : (
                         <button
                           onClick={() => handleSelectWinner(c.participant_id, 'MANUAL')}
-                          disabled={updating || isSpinning}
+                          disabled={updating}
                           style={{
                             padding: '6px 12px',
                             fontSize: '11px',
@@ -586,7 +701,7 @@ export const WinnerView = ({ quizId }) => {
                           }}
                         >
                           <Crown size={13} color="#d97706" />
-                          Select as Winner
+                          Set as Winner
                         </button>
                       )}
                     </td>
@@ -597,6 +712,366 @@ export const WinnerView = ({ quizId }) => {
           </table>
         </div>
       </div>
+
+      {/* ========================================================================= */}
+      {/* LUCKY DRAW SPINNER MODAL (Spins among candidates with SAME points)        */}
+      {/* ========================================================================= */}
+      {showDrawModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(15, 23, 42, 0.75)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '20px',
+        }}>
+          <div className="glass-card animate-fade-in" style={{
+            background: '#ffffff',
+            borderRadius: '24px',
+            maxWidth: '680px',
+            width: '100%',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            padding: '32px',
+            border: '2px solid #fde68a',
+            boxShadow: '0 25px 60px -15px rgba(217, 119, 6, 0.3)',
+            position: 'relative',
+          }}>
+            {/* Close Button */}
+            <button
+              onClick={() => {
+                if (isSpinning) return;
+                setShowDrawModal(false);
+              }}
+              style={{
+                position: 'absolute',
+                top: '20px',
+                right: '20px',
+                background: '#f8fafc',
+                border: '1px solid #cbd5e1',
+                borderRadius: '50%',
+                width: '36px',
+                height: '36px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: isSpinning ? 'not-allowed' : 'pointer',
+                color: '#64748b',
+              }}
+            >
+              <X size={18} />
+            </button>
+
+            {/* Modal Title */}
+            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '6px 16px',
+                background: '#fef3c7',
+                border: '1px solid #fde68a',
+                borderRadius: '999px',
+                color: '#b45309',
+                fontSize: '12px',
+                fontWeight: 800,
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em',
+                marginBottom: '8px',
+              }}>
+                <Dices size={16} /> Equal Points Lucky Draw Roulette
+              </div>
+              <h2 style={{ fontSize: '24px', fontWeight: 900, color: '#0f172a', margin: '4px 0' }}>
+                Spin Tied Participants
+              </h2>
+              <p style={{ fontSize: '13px', color: '#64748b', margin: 0 }}>
+                Select a point score tier below to spin among all participants tied on that exact score.
+              </p>
+            </div>
+
+            {/* Score Tier Selector Tabs */}
+            {score_tiers && score_tiers.length > 0 && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '10px',
+                marginBottom: '24px',
+                flexWrap: 'wrap',
+              }}>
+                {score_tiers.map((tier) => {
+                  const isSelected = activeScore === tier.score;
+                  return (
+                    <button
+                      key={tier.score}
+                      onClick={() => {
+                        if (isSpinning) return;
+                        setSelectedScoreTier(tier.score);
+                        setSpunWinner(null);
+                      }}
+                      disabled={isSpinning}
+                      style={{
+                        padding: '8px 16px',
+                        borderRadius: '12px',
+                        fontSize: '13px',
+                        fontWeight: 800,
+                        cursor: isSpinning ? 'not-allowed' : 'pointer',
+                        border: isSelected ? '2px solid #d97706' : '1.5px solid #e2e8f0',
+                        background: isSelected ? '#fffbeb' : '#f8fafc',
+                        color: isSelected ? '#92400e' : '#475569',
+                        boxShadow: isSelected ? '0 4px 12px rgba(217, 119, 6, 0.15)' : 'none',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      {tier.is_max ? '⭐ ' : ''}{tier.score}/4 Points ({tier.count} Tied)
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Spinning Reel / Highlight Area */}
+            <div style={{
+              background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+              borderRadius: '20px',
+              padding: '28px 20px',
+              color: '#ffffff',
+              textAlign: 'center',
+              boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.5)',
+              marginBottom: '24px',
+              position: 'relative',
+              overflow: 'hidden',
+            }}>
+              {/* Glowing Background Ring */}
+              <div style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: '260px',
+                height: '260px',
+                background: isSpinning
+                  ? 'radial-gradient(circle, rgba(245, 158, 11, 0.35) 0%, rgba(0,0,0,0) 70%)'
+                  : 'radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, rgba(0,0,0,0) 70%)',
+                pointerEvents: 'none',
+                transition: 'background 0.3s ease',
+              }} />
+
+              {/* Pool Size Header */}
+              <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '16px' }}>
+                🎯 Spinning Pool: {tiedPool.length} Participants with {activeScore}/4 Points
+              </div>
+
+              {/* Active Highlighted Slot */}
+              {tiedPool.length > 0 ? (
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  border: isSpinning
+                    ? '2px solid #f59e0b'
+                    : spunWinner
+                    ? '2px solid #10b981'
+                    : '1px solid rgba(255, 255, 255, 0.2)',
+                  borderRadius: '16px',
+                  padding: '20px',
+                  maxWidth: '400px',
+                  margin: '0 auto',
+                  boxShadow: isSpinning
+                    ? '0 0 24px rgba(245, 158, 11, 0.4)'
+                    : spunWinner
+                    ? '0 0 28px rgba(16, 185, 129, 0.4)'
+                    : 'none',
+                  transition: 'all 0.15s ease',
+                }}>
+                  {/* Candidate Avatar */}
+                  <div style={{
+                    width: '64px',
+                    height: '64px',
+                    borderRadius: '50%',
+                    background: '#ffffff',
+                    margin: '0 auto 12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    overflow: 'hidden',
+                    border: '3px solid #fde68a',
+                  }}>
+                    {(spunWinner || tiedPool[activePoolIndex])?.photo ? (
+                      <img
+                        src={(spunWinner || tiedPool[activePoolIndex])?.photo}
+                        alt="Candidate"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    ) : (
+                      <Crown size={32} color="#d97706" />
+                    )}
+                  </div>
+
+                  {/* Candidate Name */}
+                  <div style={{ fontSize: '20px', fontWeight: 900, color: '#ffffff', marginBottom: '4px' }}>
+                    {(spunWinner || tiedPool[activePoolIndex])?.name}
+                  </div>
+
+                  {/* Candidate Details */}
+                  <div style={{ fontSize: '12px', color: '#cbd5e1', fontFamily: 'var(--font-mono)' }}>
+                    Phone: {(spunWinner || tiedPool[activePoolIndex])?.masked_phone} • Score: {activeScore}/4
+                  </div>
+
+                  {spunWinner && (
+                    <div style={{
+                      marginTop: '14px',
+                      padding: '6px 12px',
+                      background: '#10b981',
+                      borderRadius: '8px',
+                      color: '#ffffff',
+                      fontSize: '12px',
+                      fontWeight: 800,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                    }}>
+                      <Sparkles size={14} /> Lucky Winner Selected!
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div style={{ color: '#94a3b8', fontSize: '13px' }}>No participants found in this point tier.</div>
+              )}
+
+              {/* Pool Chips Preview */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                flexWrap: 'wrap',
+                marginTop: '18px',
+                maxHeight: '75px',
+                overflowY: 'auto',
+                padding: '4px',
+              }}>
+                {tiedPool.map((c, i) => {
+                  const isActive = !spunWinner && isSpinning && activePoolIndex === i;
+                  const isWon = spunWinner && spunWinner.participant_id === c.participant_id;
+
+                  return (
+                    <span
+                      key={c.participant_id}
+                      style={{
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        padding: '3px 8px',
+                        borderRadius: '6px',
+                        background: isWon
+                          ? '#10b981'
+                          : isActive
+                          ? '#f59e0b'
+                          : 'rgba(255, 255, 255, 0.1)',
+                        color: isWon || isActive ? '#ffffff' : '#94a3b8',
+                        border: isWon
+                          ? '1px solid #34d399'
+                          : isActive
+                          ? '1px solid #fbbf24'
+                          : '1px solid rgba(255,255,255,0.1)',
+                        transition: 'all 0.1s ease',
+                      }}
+                    >
+                      {c.name}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
+              {!spunWinner ? (
+                <button
+                  onClick={startLuckyDrawSpin}
+                  disabled={isSpinning || tiedPool.length === 0}
+                  style={{
+                    padding: '14px 32px',
+                    fontSize: '15px',
+                    fontWeight: 900,
+                    color: '#ffffff',
+                    background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
+                    border: 'none',
+                    borderRadius: '12px',
+                    cursor: isSpinning ? 'not-allowed' : 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    boxShadow: '0 8px 24px rgba(217, 119, 6, 0.35)',
+                    transition: 'all 0.15s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isSpinning) e.currentTarget.style.transform = 'translateY(-2px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'none';
+                  }}
+                >
+                  <Dices size={20} className={isSpinning ? 'animate-spin' : ''} />
+                  <span>{isSpinning ? 'Spinning Tied Pool...' : '🎲 Spin Lucky Draw'}</span>
+                </button>
+              ) : (
+                <>
+                  <button
+                    onClick={() => {
+                      handleSelectWinner(spunWinner.participant_id, 'LUCKY_DRAW', `Selected via Lucky Draw from ${tiedPool.length} participants with ${activeScore}/4 pts`);
+                      setShowDrawModal(false);
+                    }}
+                    disabled={updating}
+                    style={{
+                      padding: '14px 28px',
+                      fontSize: '14px',
+                      fontWeight: 900,
+                      color: '#ffffff',
+                      background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                      border: 'none',
+                      borderRadius: '12px',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      boxShadow: '0 8px 24px rgba(5, 150, 105, 0.35)',
+                    }}
+                  >
+                    <Crown size={18} />
+                    <span>Crown {spunWinner.name} as Winner 👑</span>
+                  </button>
+
+                  <button
+                    onClick={startLuckyDrawSpin}
+                    disabled={isSpinning}
+                    style={{
+                      padding: '14px 22px',
+                      fontSize: '14px',
+                      fontWeight: 800,
+                      color: '#475569',
+                      background: '#f8fafc',
+                      border: '1.5px solid #cbd5e1',
+                      borderRadius: '12px',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                    }}
+                  >
+                    <RotateCcw size={16} />
+                    <span>Re-Spin 🎲</span>
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
