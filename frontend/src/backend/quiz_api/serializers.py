@@ -329,17 +329,35 @@ class AdminQuizSerializer(serializers.ModelSerializer):
 
 
 class AdminAnswerReviewSerializer(serializers.ModelSerializer):
-    question_number = serializers.IntegerField(source='question.question_number')
-    question_text = serializers.CharField(source='question.question_text')
-    selected_key = serializers.CharField(source='selected_option.option_key')
-    selected_text = serializers.CharField(source='selected_option.option_text')
+    question_number = serializers.SerializerMethodField()
+    question_text = serializers.SerializerMethodField()
+    selected_key = serializers.SerializerMethodField()
+    selected_text = serializers.SerializerMethodField()
     correct_option = serializers.SerializerMethodField()
 
     class Meta:
         model = Answer
         fields = ['id', 'question_number', 'question_text', 'selected_key', 'selected_text', 'is_correct', 'correct_option']
 
+    def get_question_number(self, obj):
+        return obj.question.question_number if obj.question else 1
+
+    def get_question_text(self, obj):
+        return obj.question.question_text if obj.question else ""
+
+    def get_selected_key(self, obj):
+        if obj.selected_option:
+            return obj.selected_option.option_key
+        return "—"
+
+    def get_selected_text(self, obj):
+        if obj.selected_option:
+            return obj.selected_option.option_text
+        return "—"
+
     def get_correct_option(self, obj):
+        if not obj.question:
+            return None
         correct = obj.question.options.filter(is_correct=True).first()
         if correct:
             return {

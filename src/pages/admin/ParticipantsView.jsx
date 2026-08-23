@@ -12,9 +12,12 @@ export const ParticipantsView = ({ quizId }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedAttempt, setSelectedAttempt] = useState(null);
 
-  const fetchParticipants = async () => {
+  const fetchParticipants = async (forceSync = false) => {
     setLoading(true);
     try {
+      if (forceSync) {
+        await api.syncFromMongo().catch(() => {});
+      }
       const res = await api.getAdminParticipants(quizId);
       setData(res);
     } catch (err) {
@@ -25,7 +28,7 @@ export const ParticipantsView = ({ quizId }) => {
   };
 
   useEffect(() => {
-    fetchParticipants();
+    fetchParticipants(true);
   }, [quizId]);
 
   const toggleRowReveal = (id) => {
@@ -87,7 +90,7 @@ export const ParticipantsView = ({ quizId }) => {
           </button>
 
           {/* Refresh Button */}
-          <button onClick={fetchParticipants} className="btn-secondary" style={{ padding: '8px 12px' }} title="Refresh Submissions">
+          <button onClick={() => fetchParticipants(true)} className="btn-secondary" style={{ padding: '8px 12px' }} title="Refresh & Sync Submissions">
             <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
           </button>
         </div>
