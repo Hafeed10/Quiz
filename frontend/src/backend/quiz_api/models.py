@@ -82,19 +82,27 @@ class Quiz(models.Model):
     def calculate_current_lifecycle(self):
         """
         Determine if the quiz is upcoming, live, or ended.
-        Admin's explicitly set status (LIVE, ENDED, DRAFT, ARCHIVED) takes full precedence.
-        If status is SCHEDULED, it checks the admin's start_time and end_time window.
+        Admin's explicitly set status (ENDED, DRAFT, ARCHIVED) takes precedence.
+        Quizzes with a declared winner or with past dates are automatically ENDED.
+        If status is SCHEDULED, it checks the start_time and end_time window.
         """
-        if self.status in ['LIVE', 'ENDED', 'DRAFT', 'ARCHIVED']:
+        if self.status == 'DRAFT':
+            return 'DRAFT'
+        if self.status in ['ENDED', 'ARCHIVED']:
             return self.status
 
         today = timezone.localdate()
         now_time = timezone.localtime().time()
 
+        # If quiz date is in the past or a manual winner has been selected, it is completed/ended
+        if self.quiz_date < today or self.manual_winner is not None:
+            return 'ENDED'
+
+        if self.status == 'LIVE':
+            return 'LIVE'
+
         if self.quiz_date > today:
             return 'SCHEDULED'
-        elif self.quiz_date < today:
-            return 'ENDED'
         else:
             # Same day
             if now_time < self.start_time:

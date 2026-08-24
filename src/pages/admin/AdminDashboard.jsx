@@ -139,6 +139,7 @@ export const AdminDashboard = () => {
   };
 
   const todayStats = stats?.today_stats || {};
+  const todayStr = new Date().toISOString().split('T')[0];
 
   const quizDropdownOptions = [
     {
@@ -147,12 +148,23 @@ export const AdminDashboard = () => {
       badge: `${quizzes.length} Quizzes`,
       badgeClass: 'badge-live',
     },
-    ...quizzes.map((q) => ({
-      value: q.id,
-      label: `${q.quiz_date} — ${q.title}`,
-      badge: q.dynamic_status,
-      badgeClass: q.dynamic_status === 'LIVE' ? 'badge-live' : q.dynamic_status === 'SCHEDULED' ? 'badge-scheduled' : 'badge-ended',
-    }))
+    ...quizzes.map((q) => {
+      const isDraft = q.status === 'DRAFT' || q.dynamic_status === 'DRAFT';
+      const hasWinner = Boolean(q.winner_name && q.winner_name.trim() && q.winner_name !== '—');
+      const isPastDate = Boolean(q.quiz_date && q.quiz_date < todayStr);
+      const isCompleted = !isDraft && (q.dynamic_status === 'ENDED' || q.dynamic_status === 'ARCHIVED' || q.dynamic_status === 'COMPLETED' || q.status === 'ENDED' || q.status === 'ARCHIVED' || hasWinner || isPastDate);
+      const isLive = !isDraft && !isCompleted && (q.dynamic_status === 'LIVE' || q.status === 'LIVE');
+
+      const badgeLabel = isCompleted ? 'COMPLETED' : isLive ? 'LIVE' : isDraft ? 'DRAFT' : 'SCHEDULED';
+      const badgeClass = isLive ? 'badge-live' : isCompleted ? 'badge-completed' : isDraft ? 'badge-ended' : 'badge-scheduled';
+
+      return {
+        value: q.id,
+        label: `${q.quiz_date} — ${q.title}`,
+        badge: badgeLabel,
+        badgeClass: badgeClass,
+      };
+    })
   ];
 
   const handleViewPortal = () => {

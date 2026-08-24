@@ -1,11 +1,30 @@
 import React, { useState } from 'react';
-import ReactDOM from 'react-dom';
-import { Search, Filter, ArrowRight, Edit3, Eye, Calendar, BookOpen } from 'lucide-react';
+import { Search, Filter, Edit3, Eye, BookOpen, CheckCircle2 } from 'lucide-react';
 import { CustomDropdown } from '../../components/CustomDropdown';
 
-export const QuizHistoryView = ({ quizzes, onSelectQuiz, onEditQuiz, onDeleteQuiz, onMakeLive, onCloseQuiz }) => {
+export const QuizHistoryView = ({ quizzes, onSelectQuiz, onEditQuiz, onDeleteQuiz: _onDeleteQuiz, onMakeLive: _onMakeLive, onCloseQuiz }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
+
+  const getQuizStatus = (q) => {
+    const isDraft = q.status === 'DRAFT' || q.dynamic_status === 'DRAFT';
+    if (isDraft) return { status: 'DRAFT', label: 'DRAFT', badgeClass: 'badge-ended', isLive: false, isCompleted: false, isDraft: true };
+
+    const hasWinner = Boolean(q.winner_name && q.winner_name.trim() && q.winner_name !== '—');
+    const todayStr = new Date().toISOString().split('T')[0];
+    const isPastDate = Boolean(q.quiz_date && q.quiz_date < todayStr);
+    const isExplicitCompleted = q.dynamic_status === 'ENDED' || q.dynamic_status === 'ARCHIVED' || q.dynamic_status === 'COMPLETED' || q.status === 'ENDED' || q.status === 'ARCHIVED';
+
+    if (isExplicitCompleted || hasWinner || isPastDate) {
+      return { status: 'COMPLETED', label: 'COMPLETED', badgeClass: 'badge-completed', isLive: false, isCompleted: true, isDraft: false };
+    }
+
+    if (q.dynamic_status === 'LIVE' || q.status === 'LIVE') {
+      return { status: 'LIVE', label: 'LIVE', badgeClass: 'badge-live', isLive: true, isCompleted: false, isDraft: false };
+    }
+
+    return { status: 'SCHEDULED', label: 'SCHEDULED', badgeClass: 'badge-scheduled', isLive: false, isCompleted: false, isDraft: false };
+  };
 
   const statusOptions = [
     { value: 'ALL', label: 'All Statuses' },
@@ -20,14 +39,10 @@ export const QuizHistoryView = ({ quizzes, onSelectQuiz, onEditQuiz, onDeleteQui
       q.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       q.quiz_date.includes(searchQuery);
 
+    const quizStatusInfo = getQuizStatus(q);
     const matchesStatus =
       statusFilter === 'ALL' ||
-      (statusFilter === 'COMPLETED' && (q.dynamic_status === 'ENDED' || q.dynamic_status === 'ARCHIVED' || q.dynamic_status === 'COMPLETED' || q.status === 'ENDED' || q.status === 'ARCHIVED')) ||
-      (statusFilter === 'LIVE' && (q.dynamic_status === 'LIVE' || q.status === 'LIVE')) ||
-      (statusFilter === 'SCHEDULED' && (q.dynamic_status === 'SCHEDULED' || q.status === 'SCHEDULED')) ||
-      (statusFilter === 'DRAFT' && (q.status === 'DRAFT' || q.dynamic_status === 'DRAFT')) ||
-      q.dynamic_status === statusFilter ||
-      q.status === statusFilter;
+      statusFilter === quizStatusInfo.status;
 
     return matchesSearch && matchesStatus;
   });
@@ -59,73 +74,116 @@ export const QuizHistoryView = ({ quizzes, onSelectQuiz, onEditQuiz, onDeleteQui
           }}>
             Quiz Ledger & History
           </h1>
-          <p style={{ fontSize: '13px', color: '#64748b', margin: '4px 0 0' }}>
+          <p style={{
+            color: '#64748b',
+            fontSize: '13px',
+            fontWeight: 500,
+            marginTop: '6px',
+            marginBottom: 0,
+          }}>
             Comprehensive ledger of all daily academic assessments. Inspect submissions, manage live availability, or update content.
           </p>
         </div>
 
-        {/* Right Search & Filter */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-          {/* Search Box */}
-          <div style={{ position: 'relative' }}>
-            <Search size={15} color="#94a3b8" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
-            <input
-              type="text"
-              placeholder="Search by title or date..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{
-                paddingLeft: '38px',
-                paddingRight: '14px',
-                paddingTop: '9px',
-                paddingBottom: '9px',
-                fontSize: '13px',
-                background: '#f8fafc',
-                border: '1.5px solid #cbd5e1',
-                borderRadius: '10px',
-                color: '#0f172a',
-                width: '220px',
-                outline: 'none',
-                fontWeight: 600,
-                transition: 'border 0.15s ease',
-              }}
-              onFocus={(e) => (e.currentTarget.style.borderColor = '#059669')}
-              onBlur={(e) => (e.currentTarget.style.borderColor = '#cbd5e1')}
-            />
+        {/* Global Record Metric */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '16px',
+          background: '#f8fafc',
+          padding: '10px 18px',
+          borderRadius: '12px',
+          border: '1px solid #e2e8f0',
+        }}>
+          <div>
+            <div style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Assessments</div>
+            <div style={{ fontSize: '18px', fontWeight: 900, color: '#0f172a' }}>{quizzes.length} Quizzes</div>
           </div>
-
-          {/* Custom Status Filter Dropdown */}
-          <CustomDropdown
-            options={statusOptions}
-            value={statusFilter}
-            onChange={(val) => setStatusFilter(val)}
-            width="210px"
-          />
         </div>
       </div>
 
-      {/* Ledger Table Card */}
-      <div className="glass-card" style={{
-        overflow: 'hidden',
+      {/* Filter / Search Bar */}
+      <div style={{
         background: '#ffffff',
-        borderRadius: '20px',
+        padding: '18px 24px',
+        borderRadius: '16px',
         border: '1.5px solid #e2e8f0',
-        boxShadow: '0 12px 32px -4px rgba(15, 23, 42, 0.05)',
+        marginBottom: '24px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '16px',
+        boxShadow: '0 4px 16px rgba(15, 23, 42, 0.02)',
+      }}>
+        {/* Search Input */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          background: '#f8fafc',
+          padding: '8px 14px',
+          borderRadius: '10px',
+          border: '1px solid #cbd5e1',
+          width: '320px',
+          maxWidth: '100%',
+        }}>
+          <Search size={16} color="#64748b" />
+          <input
+            type="text"
+            placeholder="Search by title or date (YYYY-MM-DD)..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              outline: 'none',
+              fontSize: '13px',
+              fontWeight: 600,
+              color: '#0f172a',
+              width: '100%',
+            }}
+          />
+        </div>
+
+        {/* Dropdown Filter */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ fontSize: '13px', fontWeight: 700, color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Filter size={15} />
+            <span>Filter Status:</span>
+          </div>
+          <div style={{ width: '220px' }}>
+            <CustomDropdown
+              options={statusOptions}
+              value={statusFilter}
+              onChange={setStatusFilter}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Table Card */}
+      <div style={{
+        background: '#ffffff',
+        borderRadius: '16px',
+        border: '1.5px solid #e2e8f0',
+        boxShadow: '0 8px 24px rgba(15, 23, 42, 0.04)',
+        overflow: 'hidden',
       }}>
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
               <tr style={{
-                borderBottom: '1.5px solid #e2e8f0',
                 background: '#f8fafc',
+                borderBottom: '1.5px solid #e2e8f0',
                 color: '#64748b',
                 fontSize: '11px',
                 fontWeight: 800,
                 textTransform: 'uppercase',
-                letterSpacing: '0.06em',
+                letterSpacing: '0.05em',
               }}>
                 <th style={{ padding: '16px 24px' }}>DATE</th>
-                <th style={{ padding: '16px 24px' }}>QUIZ TITLE</th>
+                <th style={{ padding: '16px 24px' }}>QUIZ TITLE & ID</th>
                 <th style={{ padding: '16px 24px' }}>STATUS</th>
                 <th style={{ padding: '16px 24px' }}>PARTICIPANTS</th>
                 <th style={{ padding: '16px 24px' }}>AVG. SCORE</th>
@@ -144,9 +202,8 @@ export const QuizHistoryView = ({ quizzes, onSelectQuiz, onEditQuiz, onDeleteQui
                 </tr>
               ) : (
                 filteredQuizzes.map((q, idx) => {
-                  const isDraft = q.status === 'DRAFT';
-                  const isLive = q.dynamic_status === 'LIVE';
-                  const isCompleted = q.dynamic_status === 'ENDED' || q.status === 'ENDED';
+                  const statusInfo = getQuizStatus(q);
+                  const isDraft = statusInfo.isDraft;
                   const idLabel = `ID: LX-${String(q.id).padStart(3, '0')}-${String.fromCharCode(65 + (idx % 26))}`;
 
                   return (
@@ -176,8 +233,8 @@ export const QuizHistoryView = ({ quizzes, onSelectQuiz, onEditQuiz, onDeleteQui
 
                       {/* Status Pill */}
                       <td style={{ padding: '18px 24px' }}>
-                        <span className={`badge ${isLive ? 'badge-live' : isDraft ? 'badge-ended' : 'badge-completed'}`} style={{ padding: '4px 10px', fontSize: '11px', fontWeight: 800 }}>
-                          {isCompleted ? 'COMPLETED' : q.dynamic_status || q.status}
+                        <span className={`badge ${statusInfo.badgeClass}`} style={{ padding: '4px 10px', fontSize: '11px', fontWeight: 800 }}>
+                          {statusInfo.label}
                         </span>
                       </td>
 
@@ -196,7 +253,7 @@ export const QuizHistoryView = ({ quizzes, onSelectQuiz, onEditQuiz, onDeleteQui
                         {isDraft ? '—' : q.winner_name || '—'}
                       </td>
 
-                      {/* Actions: Edit, Details */}
+                      {/* Actions: Edit, Details, Complete */}
                       <td style={{ padding: '18px 24px', textAlign: 'right' }}>
                         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-end' }}>
                           {/* Details / View Submissions Button */}
@@ -266,6 +323,47 @@ export const QuizHistoryView = ({ quizzes, onSelectQuiz, onEditQuiz, onDeleteQui
                             <Edit3 size={14} />
                             <span>Edit</span>
                           </button>
+
+                          {/* Complete / Close Quiz Button */}
+                          {statusInfo.isLive && onCloseQuiz && (
+                            <button
+                              onClick={() => {
+                                if (window.confirm(`Mark "${q.title}" as COMPLETED and conclude live assessment?`)) {
+                                  onCloseQuiz(q.id);
+                                }
+                              }}
+                              style={{
+                                background: '#fff1f2',
+                                border: '1px solid #fecdd3',
+                                borderRadius: '8px',
+                                color: '#be123c',
+                                fontWeight: 800,
+                                fontSize: '11px',
+                                padding: '6px 12px',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '5px',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.04em',
+                                transition: 'all 0.15s ease',
+                              }}
+                              title="Mark Quiz as Completed"
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = '#be123c';
+                                e.currentTarget.style.color = '#ffffff';
+                                e.currentTarget.style.borderColor = '#be123c';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = '#fff1f2';
+                                e.currentTarget.style.color = '#be123c';
+                                e.currentTarget.style.borderColor = '#fecdd3';
+                              }}
+                            >
+                              <CheckCircle2 size={14} />
+                              <span>Complete</span>
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
