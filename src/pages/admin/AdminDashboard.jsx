@@ -787,7 +787,11 @@ export const AdminDashboard = () => {
 
           {/* TAB 4: WINNER PORTAL */}
           {activeTab === 'winner' && (
-            <WinnerView quizId={selectedQuizId && selectedQuizId !== 'ALL' ? selectedQuizId : (stats?.today_stats?.quiz_id || quizzes[0]?.id)} />
+            <WinnerView
+              quizId={selectedQuizId && selectedQuizId !== 'ALL' ? selectedQuizId : (stats?.today_stats?.quiz_id || quizzes[0]?.id)}
+              onQuizUpdated={loadData}
+              onCloseQuiz={handleCloseQuiz}
+            />
           )}
 
           {/* TAB 5: QUIZ HISTORY */}

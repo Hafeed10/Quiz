@@ -6,10 +6,11 @@ import {
   Dices, Crown, RotateCcw, CheckCircle2, Zap, UserCheck, RefreshCw, X, Play, Volume2
 } from 'lucide-react';
 
-export const WinnerView = ({ quizId }) => {
+export const WinnerView = ({ quizId, onQuizUpdated, onCloseQuiz }) => {
   const [winnerData, setWinnerData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [completing, setCompleting] = useState(false);
   const [showFullPhone, setShowFullPhone] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -75,15 +76,43 @@ export const WinnerView = ({ quizId }) => {
     }
   };
 
-  const handleSelectWinner = async (participantId, mode = 'MANUAL', notes = '') => {
+  const handleCompleteQuiz = async () => {
+    if (!quizId || quizId === 'ALL') return;
+    if (!window.confirm(`Mark this quiz as COMPLETED and end live assessment?`)) {
+      return;
+    }
+    setCompleting(true);
+    try {
+      if (onCloseQuiz) {
+        await onCloseQuiz(quizId);
+      } else {
+        await api.closeAdminQuiz(quizId);
+      }
+      await fetchWinner();
+      if (onQuizUpdated) {
+        onQuizUpdated();
+      }
+      triggerConfetti();
+    } catch (err) {
+      alert(err.message || 'Failed to mark quiz as completed');
+    } finally {
+      setCompleting(false);
+    }
+  };
+
+  const handleSelectWinner = async (participantId, mode = 'MANUAL', notes = '', markCompleted = false) => {
     setUpdating(true);
     try {
       const res = await api.selectAdminQuizWinner(quizId, {
         participant_id: participantId,
         selection_mode: mode,
-        notes: notes
+        notes: notes,
+        mark_completed: markCompleted,
       });
       setWinnerData(res);
+      if (markCompleted && onQuizUpdated) {
+        onQuizUpdated();
+      }
       triggerConfetti();
     } catch (err) {
       alert(err.message || 'Failed to update winner selection');
@@ -99,6 +128,9 @@ export const WinnerView = ({ quizId }) => {
         selection_mode: 'AUTO'
       });
       setWinnerData(res);
+      if (onQuizUpdated) {
+        onQuizUpdated();
+      }
     } catch (err) {
       alert(err.message || 'Failed to reset winner selection');
     } finally {
@@ -111,6 +143,14 @@ export const WinnerView = ({ quizId }) => {
   const maxScore = winnerData?.max_score ?? (allCandidates[0]?.score ?? 4);
   const activeScore = selectedScoreTier !== null ? selectedScoreTier : maxScore;
   
+  const isQuizCompleted = Boolean(
+    winnerData?.is_completed ||
+    winnerData?.status === 'ENDED' ||
+    winnerData?.status === 'ARCHIVED' ||
+    winnerData?.dynamic_status === 'ENDED' ||
+    winnerData?.dynamic_status === 'ARCHIVED'
+  );
+
   // Candidates that share the exact same number of points
   const tiedPool = allCandidates.filter((c) => c.score === activeScore);
 
@@ -251,7 +291,58 @@ export const WinnerView = ({ quizId }) => {
         </div>
 
         {/* Action Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          {/* Complete Quiz Action Button */}
+          {!isQuizCompleted ? (
+            <button
+              onClick={handleCompleteQuiz}
+              disabled={completing || updating}
+              style={{
+                padding: '9px 18px',
+                fontSize: '13px',
+                fontWeight: 800,
+                color: '#ffffff',
+                background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                border: '1.5px solid #059669',
+                borderRadius: '10px',
+                cursor: completing ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 12px rgba(5, 150, 105, 0.25)',
+                transition: 'all 0.15s ease',
+              }}
+              title="End live participation and mark quiz as completed"
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = '0 6px 16px rgba(5, 150, 105, 0.35)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'none';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(5, 150, 105, 0.25)';
+              }}
+            >
+              <CheckCircle2 size={16} />
+              <span>{completing ? 'Completing...' : 'Mark Quiz as COMPLETED'}</span>
+            </button>
+          ) : (
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '8px 14px',
+              background: '#ecfdf5',
+              border: '1px solid #a7f3d0',
+              borderRadius: '10px',
+              color: '#065f46',
+              fontSize: '12px',
+              fontWeight: 800,
+            }}>
+              <CheckCircle2 size={15} color="#059669" />
+              <span>Quiz Completed</span>
+            </div>
+          )}
+
           {/* Lucky Draw Trigger Button */}
           <button
             onClick={() => openLuckyDrawModal(maxScore)}
@@ -674,35 +765,71 @@ export const WinnerView = ({ quizId }) => {
                           <Crown size={13} /> Declared Winner
                         </span>
                       ) : (
-                        <button
-                          onClick={() => handleSelectWinner(c.participant_id, 'MANUAL')}
-                          disabled={updating}
-                          style={{
-                            padding: '6px 12px',
-                            fontSize: '11px',
-                            fontWeight: 700,
-                            background: '#ffffff',
-                            border: '1px solid #cbd5e1',
-                            borderRadius: '8px',
-                            color: '#334155',
-                            cursor: 'pointer',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '5px',
-                            transition: 'all 0.15s ease',
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.borderColor = '#d97706';
-                            e.currentTarget.style.color = '#d97706';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.borderColor = '#cbd5e1';
-                            e.currentTarget.style.color = '#334155';
-                          }}
-                        >
-                          <Crown size={13} color="#d97706" />
-                          Set as Winner
-                        </button>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-end' }}>
+                          <button
+                            onClick={() => handleSelectWinner(c.participant_id, 'MANUAL', `Hand-picked winner with score ${c.score}/4`, false)}
+                            disabled={updating}
+                            style={{
+                              padding: '6px 12px',
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              background: '#ffffff',
+                              border: '1px solid #cbd5e1',
+                              borderRadius: '8px',
+                              color: '#334155',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '5px',
+                              transition: 'all 0.15s ease',
+                            }}
+                            title="Set as Winner"
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.borderColor = '#d97706';
+                              e.currentTarget.style.color = '#d97706';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.borderColor = '#cbd5e1';
+                              e.currentTarget.style.color = '#334155';
+                            }}
+                          >
+                            <Crown size={13} color="#d97706" />
+                            Set as Winner
+                          </button>
+
+                          {!isQuizCompleted && (
+                            <button
+                              onClick={() => handleSelectWinner(c.participant_id, 'MANUAL', `Hand-picked winner with score ${c.score}/4`, true)}
+                              disabled={updating}
+                              style={{
+                                padding: '6px 12px',
+                                fontSize: '11px',
+                                fontWeight: 800,
+                                background: '#ecfdf5',
+                                border: '1px solid #a7f3d0',
+                                borderRadius: '8px',
+                                color: '#065f46',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '5px',
+                                transition: 'all 0.15s ease',
+                              }}
+                              title="Set Winner and Mark Quiz as Completed"
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = '#065f46';
+                                e.currentTarget.style.color = '#ffffff';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = '#ecfdf5';
+                                e.currentTarget.style.color = '#065f46';
+                              }}
+                            >
+                              <CheckCircle2 size={13} color="currentColor" />
+                              Set & Complete
+                            </button>
+                          )}
+                        </div>
                       )}
                     </td>
                   </tr>
@@ -761,90 +888,95 @@ export const WinnerView = ({ quizId }) => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                cursor: isSpinning ? 'not-allowed' : 'pointer',
+                cursor: 'pointer',
                 color: '#64748b',
               }}
             >
               <X size={18} />
             </button>
 
-            {/* Modal Title */}
+            {/* Modal Header */}
             <div style={{ textAlign: 'center', marginBottom: '24px' }}>
               <div style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '8px',
                 padding: '6px 16px',
-                background: '#fef3c7',
-                border: '1px solid #fde68a',
                 borderRadius: '999px',
+                background: '#fef3c7',
                 color: '#b45309',
                 fontSize: '12px',
                 fontWeight: 800,
-                textTransform: 'uppercase',
-                letterSpacing: '0.06em',
                 marginBottom: '8px',
               }}>
-                <Dices size={16} /> Equal Points Lucky Draw Roulette
+                <Dices size={16} /> FAIR RANDOM SELECTION
               </div>
               <h2 style={{ fontSize: '24px', fontWeight: 900, color: '#0f172a', margin: '4px 0' }}>
-                Spin Tied Participants
+                Lucky Draw Spinner 🎲
               </h2>
-              <p style={{ fontSize: '13px', color: '#64748b', margin: 0 }}>
-                Select a point score tier below to spin among all participants tied on that exact score.
+              <p style={{ fontSize: '13px', color: '#64748b', maxWidth: '440px', margin: '0 auto' }}>
+                Select a points tier to spin among all tied participants. The lucky draw guarantees fair and transparent selection.
               </p>
             </div>
 
-            {/* Score Tier Selector Tabs */}
-            {score_tiers && score_tiers.length > 0 && (
+            {/* Score Tier Selection Buttons */}
+            {score_tiers && score_tiers.length > 1 && (
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '10px',
+                gap: '8px',
                 marginBottom: '24px',
                 flexWrap: 'wrap',
               }}>
+                <span style={{ fontSize: '12px', fontWeight: 800, color: '#475569', marginRight: '4px' }}>
+                  Choose Pool Tier:
+                </span>
                 {score_tiers.map((tier) => {
                   const isSelected = activeScore === tier.score;
                   return (
                     <button
                       key={tier.score}
-                      onClick={() => {
-                        if (isSpinning) return;
-                        setSelectedScoreTier(tier.score);
-                        setSpunWinner(null);
-                      }}
+                      onClick={() => openLuckyDrawModal(tier.score)}
                       disabled={isSpinning}
                       style={{
-                        padding: '8px 16px',
-                        borderRadius: '12px',
-                        fontSize: '13px',
+                        padding: '6px 14px',
+                        fontSize: '12px',
                         fontWeight: 800,
-                        cursor: isSpinning ? 'not-allowed' : 'pointer',
-                        border: isSelected ? '2px solid #d97706' : '1.5px solid #e2e8f0',
-                        background: isSelected ? '#fffbeb' : '#f8fafc',
-                        color: isSelected ? '#92400e' : '#475569',
-                        boxShadow: isSelected ? '0 4px 12px rgba(217, 119, 6, 0.15)' : 'none',
+                        borderRadius: '999px',
+                        background: isSelected ? '#0f172a' : '#f1f5f9',
+                        color: isSelected ? '#ffffff' : '#475569',
+                        border: 'none',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
                         transition: 'all 0.15s ease',
                       }}
                     >
-                      {tier.is_max ? '⭐ ' : ''}{tier.score}/4 Points ({tier.count} Tied)
+                      <span>{tier.score}/4 Points</span>
+                      <span style={{
+                        background: isSelected ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.08)',
+                        padding: '1px 6px',
+                        borderRadius: '999px',
+                        fontSize: '10px',
+                      }}>
+                        {tier.count} tied
+                      </span>
                     </button>
                   );
                 })}
               </div>
             )}
 
-            {/* Spinning Reel / Highlight Area */}
+            {/* Spinner Wheel Arena */}
             <div style={{
               background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
               borderRadius: '20px',
               padding: '28px 20px',
-              color: '#ffffff',
               textAlign: 'center',
-              boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.5)',
-              marginBottom: '24px',
+              marginBottom: '28px',
+              border: '2px solid #334155',
               position: 'relative',
               overflow: 'hidden',
             }}>
@@ -1023,13 +1155,13 @@ export const WinnerView = ({ quizId }) => {
                 <>
                   <button
                     onClick={() => {
-                      handleSelectWinner(spunWinner.participant_id, 'LUCKY_DRAW', `Selected via Lucky Draw from ${tiedPool.length} participants with ${activeScore}/4 pts`);
+                      handleSelectWinner(spunWinner.participant_id, 'LUCKY_DRAW', `Selected via Lucky Draw from ${tiedPool.length} participants with ${activeScore}/4 pts`, false);
                       setShowDrawModal(false);
                     }}
                     disabled={updating}
                     style={{
-                      padding: '14px 28px',
-                      fontSize: '14px',
+                      padding: '14px 24px',
+                      fontSize: '13px',
                       fontWeight: 900,
                       color: '#ffffff',
                       background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
@@ -1043,15 +1175,42 @@ export const WinnerView = ({ quizId }) => {
                     }}
                   >
                     <Crown size={18} />
-                    <span>Crown {spunWinner.name} as Winner 👑</span>
+                    <span>Crown {spunWinner.name} 👑</span>
                   </button>
+
+                  {!isQuizCompleted && (
+                    <button
+                      onClick={() => {
+                        handleSelectWinner(spunWinner.participant_id, 'LUCKY_DRAW', `Selected via Lucky Draw from ${tiedPool.length} participants with ${activeScore}/4 pts`, true);
+                        setShowDrawModal(false);
+                      }}
+                      disabled={updating}
+                      style={{
+                        padding: '14px 24px',
+                        fontSize: '13px',
+                        fontWeight: 900,
+                        color: '#ffffff',
+                        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+                        border: 'none',
+                        borderRadius: '12px',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        boxShadow: '0 8px 24px rgba(15, 23, 42, 0.35)',
+                      }}
+                    >
+                      <CheckCircle2 size={17} color="#34d399" />
+                      <span>Crown & Complete Quiz ✓</span>
+                    </button>
+                  )}
 
                   <button
                     onClick={startLuckyDrawSpin}
                     disabled={isSpinning}
                     style={{
-                      padding: '14px 22px',
-                      fontSize: '14px',
+                      padding: '14px 20px',
+                      fontSize: '13px',
                       fontWeight: 800,
                       color: '#475569',
                       background: '#f8fafc',

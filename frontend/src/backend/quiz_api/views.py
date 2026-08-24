@@ -652,6 +652,9 @@ def admin_quiz_winner(request, quiz_id):
         "quiz_id": quiz.id,
         "quiz_title": quiz.title,
         "quiz_date": quiz.quiz_date,
+        "status": quiz.status,
+        "dynamic_status": quiz.dynamic_status,
+        "is_completed": quiz.dynamic_status in ['ENDED', 'ARCHIVED', 'COMPLETED'] or quiz.status in ['ENDED', 'ARCHIVED', 'COMPLETED'],
         "selection_mode": quiz.winner_selection_mode or 'AUTO',
         "criteria": criteria_map.get(quiz.winner_selection_mode, criteria_map['AUTO']),
         "winner_notes": quiz.winner_notes or "",
@@ -679,7 +682,7 @@ def select_admin_quiz_winner(request, quiz_id):
     """
     Set or override the daily winner for a quiz:
     POST /api/admin/quizzes/<quiz_id>/select_winner/
-    Body: { "participant_id": 123, "selection_mode": "MANUAL" | "LUCKY_DRAW" | "AUTO", "notes": "..." }
+    Body: { "participant_id": 123, "selection_mode": "MANUAL" | "LUCKY_DRAW" | "AUTO", "notes": "...", "mark_completed": true }
     """
     try:
         quiz = Quiz.objects.get(id=quiz_id)
@@ -689,6 +692,7 @@ def select_admin_quiz_winner(request, quiz_id):
     participant_id = request.data.get('participant_id')
     selection_mode = request.data.get('selection_mode', 'AUTO').upper()
     notes = request.data.get('notes', '').strip()
+    mark_completed = request.data.get('mark_completed', False)
 
     if selection_mode == 'AUTO' or not participant_id:
         quiz.manual_winner = None
@@ -702,6 +706,8 @@ def select_admin_quiz_winner(request, quiz_id):
             return Response({"error": "Participant not found."}, status=status.HTTP_404_NOT_FOUND)
 
     quiz.winner_notes = notes
+    if mark_completed:
+        quiz.status = 'ENDED'
     quiz.save()
 
     try:
