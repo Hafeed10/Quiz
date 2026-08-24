@@ -42,9 +42,12 @@ export const AdminDashboard = () => {
   const [syncingMongo, setSyncingMongo] = useState(false);
   const [activeWinnerData, setActiveWinnerData] = useState(null);
 
-  const loadData = async () => {
+  const loadData = async (shouldSync = true) => {
     setLoading(true);
     try {
+      if (shouldSync) {
+        await api.syncFromMongo().catch(() => {});
+      }
       const [statsRes, quizzesRes] = await Promise.allSettled([
         api.getAdminStats(),
         api.getAdminQuizzes(),
